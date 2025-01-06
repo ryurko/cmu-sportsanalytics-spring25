@@ -1,0 +1,35 @@
+---
+title: "Special Topics: Sports Analytics 36-460/660"
+---
+
+This is the companion website for Special Topics: Sports Analytics 36-460/660. While all of the assignments will be posted on Canvas, this website provides an alternative way to access lecture materials and additional demo files (see the see side-bar).
+
+__Lectures are on Tuesdays and Thursday from 12:30 - 1:50 PM, located in SH 105.__
+
+Office hours schedule:
+
+| Name                 | Office hours       | Location        |
+|----------------------|--------------------|-----------------|
+| Prof Yurko           | TBA  | Baker Hall 132D |
+| Quang Nguyen      | TBA  | Zoom            |
+| Meg Ellingwood     | TBA  | Zoom            |
+
+
+There are no required textbooks for this course, but the following are useful free resources that I will sometimes refer to as recommended reading:
+
++ [Beyond Multiple Linear Regression](https://bookdown.org/roback/bookdown-BeyondMLR/)
+
++ [Bayes Rules! An Introduction to Applied Bayesian Modeling](https://www.bayesrulesbook.com/)
+
++ [Analyzing Baseball Data with R (3e)](https://beanumber.github.io/abdwr3e/)
+
+And the following are some interesting sports analytics websites (more are listed in course syllabus):
+
++ [Neil Paine's Substack](https://neilpaine.substack.com/)
+
++ [Exploring Baseball Data with R by Jim Albert](https://baseballwithr.wordpress.com/)
+
++ [Plot the Ball](https://www.plottheball.com/)
+
++ [The F5](https://thef5.substack.com/)
+

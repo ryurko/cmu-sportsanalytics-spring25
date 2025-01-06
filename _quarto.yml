@@ -1,0 +1,31 @@
+project:
+  type: website
+
+website:
+  title: "Special Topics: Sports Analytics 36-460/660"
+  sidebar:
+    background: primary
+    pinned: true
+    align: center
+    tools:
+      - icon: github
+        href: https://github.com/ryurko/cmu-sportsanalytics-spring25
+        text: GitHub
+    style: docked
+    contents:
+      - href: index.qmd
+        text: Home
+      - href: lectures.qmd
+        text: Lectures
+      - href: demos.qmd
+        text: Demos
+
+format:
+  html:
+    theme: 
+      - cosmo
+      - custom.scss
+    toc: true
+
+execute:
+  freeze: auto

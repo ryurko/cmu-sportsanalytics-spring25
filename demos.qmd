@@ -1,0 +1,8 @@
+---
+title: "Demos"
+---
+
+| Demo   | Date    | Title              | Demo file                            |
+|--------|---------|--------------------|--------------------------------------|
+| 0      | Jan 14  | Into the tidyverse | [HTML](demos/00-into-tidyverse.qmd)  |
+

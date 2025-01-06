@@ -1,0 +1,9 @@
+---
+title: "Lectures"
+---
+
+| Lecture   | Date    | Title                                | Links to slides                              |
+|-----------|---------|--------------------------------------|----------------------------------------|
+| 1         | Jan 14  | Intro and Big Ideas in Sports Analytics | Coming soon        |
+
+
