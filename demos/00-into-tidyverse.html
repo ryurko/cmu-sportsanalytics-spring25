@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Special Topics: Sports Analytics 36-460/660 - Demo 01: Into the tidyverse</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Demo 01: Into the tidyverse</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Special Topics: Sports Analytics 36-460/660</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/ryurko/cmu-sportsanalytics-spring25" title="GitHub" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">Home</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lectures.html" class="sidebar-item-text sidebar-link">Lectures</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../demos.html" class="sidebar-item-text sidebar-link">Demos</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-is-exploratory-data-analysis-eda" id="toc-what-is-exploratory-data-analysis-eda" class="nav-link active" data-scroll-target="#what-is-exploratory-data-analysis-eda">What is Exploratory Data Analysis (EDA)?</a></li>
+  <li><a href="#working-with-penguins" id="toc-working-with-penguins" class="nav-link" data-scroll-target="#working-with-penguins">Working with <code>penguins</code></a></li>
+  <li><a href="#let-the-data-wrangling-begin" id="toc-let-the-data-wrangling-begin" class="nav-link" data-scroll-target="#let-the-data-wrangling-begin">Let the data wrangling begin…</a></li>
+  <li><a href="#enter-the-pipeline" id="toc-enter-the-pipeline" class="nav-link" data-scroll-target="#enter-the-pipeline">Enter the pipeline</a></li>
+  <li><a href="#more-pipeline-actions" id="toc-more-pipeline-actions" class="nav-link" data-scroll-target="#more-pipeline-actions">More pipeline actions!</a></li>
+  <li><a href="#grouped-operations" id="toc-grouped-operations" class="nav-link" data-scroll-target="#grouped-operations">Grouped operations</a></li>
+  <li><a href="#putting-it-all-together" id="toc-putting-it-all-together" class="nav-link" data-scroll-target="#putting-it-all-together">Putting it all together…</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">Demo 01: Into the tidyverse</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="what-is-exploratory-data-analysis-eda" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-exploratory-data-analysis-eda">What is Exploratory Data Analysis (EDA)?</h2>
+<p><em>(Broadly speaking)</em> EDA = questions about data + wrangling + visualization</p>
+<p><a href="https://r4ds.hadley.nz"><code>R</code> for Data Science</a>: <em>“EDA is a state of mind”</em>, an iterative cycle:</p>
+<ul>
+<li><p>generate questions</p></li>
+<li><p>answer via transformations and visualizations</p></li>
+</ul>
+<p>Example of questions?</p>
+<ul>
+<li><p>What type of <strong>variation</strong> do the variables display?</p></li>
+<li><p>What type of <strong>relationships</strong> exist between variables?</p></li>
+</ul>
+<p><strong>Goal</strong>: develop understanding and become familiar with your data</p>
+<ul>
+<li><p>EDA is <strong>NOT</strong> a replacement for statistical inference and learning</p></li>
+<li><p>EDA is an <strong>important</strong> and <strong>necessary</strong> step to build intuition</p></li>
+</ul>
+<p>We tackle the challenges of EDA with a data science workflow. An example of this according to <a href="http://hadley.nz/">Hadley Wickham</a> in <a href="https://r4ds.had.co.nz/"><code>R</code> for Data Science</a>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://d33wubrfki0l68.cloudfront.net/571b056757d68e6df81a3e3853f54d3c76ad6efc/32d37/diagrams/data-science.png" class="img-fluid figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+<p>Aspects of data <strong>wrangling</strong>:</p>
+<ul>
+<li><p><strong>import</strong>: reading in data (e.g., <code>read_csv()</code>)</p></li>
+<li><p><strong>tidy</strong>: rows = observations, columns = variables (i.e.&nbsp;<strong>tabular</strong> data)</p></li>
+<li><p><strong>transform</strong>: filter observations, create new variables, summarize, etc.</p></li>
+</ul>
+</section>
+<section id="working-with-penguins" class="level2">
+<h2 class="anchored" data-anchor-id="working-with-penguins">Working with <a href="https://allisonhorst.github.io/palmerpenguins/articles/intro.html"><code>penguins</code></a></h2>
+<p>In <code>R</code>, there are many libraries or packages/groups of programs that are not permanently stored in <code>R</code>, so we have to load them when we want to use them. You can load an <code>R</code> package by typing <code>library(package_name)</code>. (Sometimes we need to download/install the package first, as described in HW0.)</p>
+<p>Throughout this demo we will use the <a href="https://allisonhorst.github.io/palmerpenguins/articles/intro.html"><code>palmerpenguins</code> dataset</a>. To access the data, you will need to install the <code>palmerpenguins</code> package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"palmerpenguins"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Import</strong> the <code>penguins</code> dataset by loading the <code>palmerpenguins</code> package using the <code>library</code> function and then access the data with the <code>data()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins) </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>View some basic info about the <code>penguins</code> dataset:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># displays same info as c(nrow(penguins), ncol(penguins))</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(penguins) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 344   8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+</div>
+<p><code>tbl</code> (pronounced <code>tibble</code>) is the <code>tidyverse</code> way of storing tabular data, like a spreadsheet or <code>data.frame</code></p>
+<p>I assure you that you’ll run into errors as you code in <code>R</code>; in fact, my attitude as a coder is that something is wrong if I <em>never</em> get any errors while working on a project. When you run into an error, your first reaction may be to panic and post a question to Piazza. However, checking help documentation in <code>R</code> can be a great way to figure out what’s going wrong. (For good or bad, I end up having to read help documentation almost every day of my life - because, well, I regularly make mistakes in <code>R</code>.)</p>
+<p>Look at the help documentation for <code>penguins</code> by typing <code>help(penguins)</code> in the Console. What are the names of the variables in this dataset? How many observations are in this dataset?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">help</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>You should always look at your data before doing anything</strong>: view the first 6 (by default) rows with <code>head()</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(penguins) <span class="co"># Try just typing penguins into your console, what happens?</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 8
+  species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+  &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;
+1 Adelie  Torgersen           39.1          18.7               181        3750
+2 Adelie  Torgersen           39.5          17.4               186        3800
+3 Adelie  Torgersen           40.3          18                 195        3250
+4 Adelie  Torgersen           NA            NA                  NA          NA
+5 Adelie  Torgersen           36.7          19.3               193        3450
+6 Adelie  Torgersen           39.3          20.6               190        3650
+# ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;</code></pre>
+</div>
+</div>
+<p>Is our <code>penguins</code> dataset <strong>tidy</strong>?</p>
+<ul>
+<li><p>Each row = a single penguin</p></li>
+<li><p>Each column = different measurement about the penguins (can print out column names directly with <code>colnames(penguins)</code> or <code>names(penguins)</code>)</p></li>
+</ul>
+<p><strong>We’ll now explore differences among the penguins using the <code>tidyverse</code></strong>.</p>
+</section>
+<section id="let-the-data-wrangling-begin" class="level2">
+<h2 class="anchored" data-anchor-id="let-the-data-wrangling-begin">Let the data wrangling begin…</h2>
+<p>First, load the <code>tidyverse</code> for exploring the data - and do NOT worry about the warning messages that will pop-up! Warning messages will tell you when other packages that are loaded may have functions replaced with the most recent package you’ve loaded. In general though, you should just be concerned when an error message pops up (errors are different than warnings!).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'ggplot2' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'tidyr' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'readr' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'dplyr' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'stringr' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.0     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+</div>
+<p>We’ll start by <strong>summarizing</strong> <em>continuous</em> (e.g., <code>bill_length_mm</code>, <code>flipper_length_mm</code>) and <em>categorical</em> (e.g., <code>species</code>, <code>island</code>) variables in different ways.</p>
+<p>We can compute <strong>summary statistics</strong> for <em>continuous</em> variables with the <code>summary()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(penguins<span class="sc">$</span>bill_length_mm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+  32.10   39.23   44.45   43.92   48.50   59.60       2 </code></pre>
+</div>
+</div>
+<p>Compute <strong>counts</strong> of <em>categorical</em> variables with <code>table()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="st">"island"</span> <span class="ot">=</span> penguins<span class="sc">$</span>island) <span class="co"># be careful it ignores NA values!</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>island
+   Biscoe     Dream Torgersen 
+      168       124        52 </code></pre>
+</div>
+</div>
+<p>How do we remove the penguins with missing <code>bill_length_mm</code> values? Within the <code>tidyverse</code>, <a href="https://dplyr.tidyverse.org/"><code>dplyr</code></a> is a package with functions for data wrangling (because it’s within the tidyverse that means you do NOT have to load it separately with <code>library(dplyr)</code> after using <code>library(tidyverse)</code>!). It’s considered a <em>“grammar of data manipulation”</em>: <code>dplyr</code> functions are <strong>verbs</strong>, datasets are <strong>nouns</strong>.</p>
+<p><strong>We can <a href="https://dplyr.tidyverse.org/reference/filter.html"><code>filter()</code></a> our dataset to choose observations meeting conditions</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>clean_penguins <span class="ot">&lt;-</span> <span class="fu">filter</span>(penguins, <span class="sc">!</span><span class="fu">is.na</span>(bill_length_mm))</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Use help(is.na) to see what it returns. And then observe </span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co"># that the ! operator means to negate what comes after it.</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># This means !TRUE == FALSE (i.e., opposite of TRUE is equal to FALSE).</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(penguins) <span class="sc">-</span> <span class="fu">nrow</span>(clean_penguins) <span class="co"># Difference in rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+</div>
+<p>If we want to only consider a subset of columns in our data, <strong>we can <a href="https://dplyr.tidyverse.org/reference/select.html"><code>select()</code></a> variables of interest</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>sel_penguins <span class="ot">&lt;-</span> <span class="fu">select</span>(clean_penguins, species, island, bill_length_mm, flipper_length_mm)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sel_penguins, <span class="at">n =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  species island    bill_length_mm flipper_length_mm
+  &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;             &lt;int&gt;
+1 Adelie  Torgersen           39.1               181
+2 Adelie  Torgersen           39.5               186
+3 Adelie  Torgersen           40.3               195</code></pre>
+</div>
+</div>
+<p><strong>We can <a href="https://dplyr.tidyverse.org/reference/arrange.html"><code>arrange()</code></a> our dataset to sort observations by variables</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>bill_penguins <span class="ot">&lt;-</span> <span class="fu">arrange</span>(sel_penguins, <span class="fu">desc</span>(bill_length_mm)) <span class="co"># use desc() for descending order</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(bill_penguins, <span class="at">n =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  species   island bill_length_mm flipper_length_mm
+  &lt;fct&gt;     &lt;fct&gt;           &lt;dbl&gt;             &lt;int&gt;
+1 Gentoo    Biscoe           59.6               230
+2 Chinstrap Dream            58                 181
+3 Gentoo    Biscoe           55.9               228</code></pre>
+</div>
+</div>
+<p><strong>We can <a href="https://dplyr.tidyverse.org/reference/summarise.html"><code>summarize()</code></a> our dataset to one row based on functions of variables</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(bill_penguins, <span class="fu">max</span>(bill_length_mm), <span class="fu">median</span>(flipper_length_mm))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  `max(bill_length_mm)` `median(flipper_length_mm)`
+                  &lt;dbl&gt;                       &lt;dbl&gt;
+1                  59.6                         197</code></pre>
+</div>
+</div>
+<p><strong>We can <a href="https://dplyr.tidyverse.org/reference/mutate.html"><code>mutate()</code></a> our dataset to create new variables</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>new_penguins <span class="ot">&lt;-</span> <span class="fu">mutate</span>(bill_penguins, </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                       <span class="at">bill_flipper_ratio =</span> bill_length_mm <span class="sc">/</span> flipper_length_mm,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">flipper_bill_ratio =</span> flipper_length_mm <span class="sc">/</span> bill_length_mm)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(new_penguins, <span class="at">n =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 6
+  species island bill_length_mm flipper_length_mm bill_flipper_ratio
+  &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt;             &lt;int&gt;              &lt;dbl&gt;
+1 Gentoo  Biscoe           59.6               230              0.259
+# ℹ 1 more variable: flipper_bill_ratio &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>How do we perform several of these actions?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">arrange</span>(<span class="fu">select</span>(<span class="fu">mutate</span>(<span class="fu">filter</span>(penguins, <span class="sc">!</span><span class="fu">is.na</span>(flipper_length_mm)), <span class="at">bill_flipper_ratio =</span> bill_length_mm <span class="sc">/</span> flipper_length_mm), species, island, bill_flipper_ratio), <span class="fu">desc</span>(bill_flipper_ratio)), <span class="at">n =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  species   island bill_flipper_ratio
+  &lt;fct&gt;     &lt;fct&gt;               &lt;dbl&gt;
+1 Chinstrap Dream               0.320</code></pre>
+</div>
+</div>
+<p>That’s awfully annoying to do, and also difficult to read…</p>
+</section>
+<section id="enter-the-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="enter-the-pipeline">Enter the pipeline</h2>
+<p>The <code>|&gt;</code> (<em>pipe</em>) operator is used in the to chain commands together. Note: you can also use the <code>tidyverse</code> pipe <code>%&gt;%</code> (from <a href="https://magrittr.tidyverse.org/articles/magrittr.html"><code>magrittr</code></a>), but <code>|&gt;</code> is the built-in pipe that is native to new versions of <code>R</code> without loading the <code>tidyverse</code>.</p>
+<p><code>|&gt;</code> directs the <strong>data analyis pipeline</strong>: output of one function pipes into input of the next function</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>penguins <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(flipper_length_mm)) <span class="sc">|&gt;</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_flipper_ratio =</span> bill_length_mm <span class="sc">/</span> flipper_length_mm) <span class="sc">|&gt;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(species, island, bill_flipper_ratio) <span class="sc">|&gt;</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(bill_flipper_ratio)) <span class="sc">|&gt;</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  species   island bill_flipper_ratio
+  &lt;fct&gt;     &lt;fct&gt;               &lt;dbl&gt;
+1 Chinstrap Dream               0.320
+2 Chinstrap Dream               0.275
+3 Chinstrap Dream               0.270
+4 Chinstrap Dream               0.270
+5 Chinstrap Dream               0.268</code></pre>
+</div>
+</div>
+</section>
+<section id="more-pipeline-actions" class="level2">
+<h2 class="anchored" data-anchor-id="more-pipeline-actions">More pipeline actions!</h2>
+<p>Instead of <code>head()</code>, <strong>we can <a href="https://dplyr.tidyverse.org/reference/slice.html"><code>slice()</code></a> our dataset to choose the observations based on the position</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>penguins <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(flipper_length_mm)) <span class="sc">|&gt;</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">bill_flipper_ratio =</span> bill_length_mm <span class="sc">/</span> flipper_length_mm) <span class="sc">|&gt;</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(species, island, bill_flipper_ratio) <span class="sc">|&gt;</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(bill_flipper_ratio)) <span class="sc">|&gt;</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">10</span>, <span class="dv">100</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 3
+  species   island bill_flipper_ratio
+  &lt;fct&gt;     &lt;fct&gt;               &lt;dbl&gt;
+1 Chinstrap Dream               0.320
+2 Chinstrap Dream               0.275
+3 Chinstrap Dream               0.264
+4 Gentoo    Biscoe              0.227</code></pre>
+</div>
+</div>
+</section>
+<section id="grouped-operations" class="level2">
+<h2 class="anchored" data-anchor-id="grouped-operations">Grouped operations</h2>
+<p><strong>We <a href="https://dplyr.tidyverse.org/reference/group_by.html"><code>group_by()</code></a> to split our dataset into groups based on a variable’s values</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>penguins <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(flipper_length_mm)) <span class="sc">|&gt;</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(island) <span class="sc">|&gt;</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n_penguins =</span> <span class="fu">n</span>(), <span class="co">#counts number of rows in group</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">ave_flipper_length =</span> <span class="fu">mean</span>(flipper_length_mm), </span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">sum_bill_depth =</span> <span class="fu">sum</span>(bill_depth_mm),</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> <span class="co"># all levels of grouping dropping</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n_penguins)) <span class="sc">|&gt;</span></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  island    n_penguins ave_flipper_length sum_bill_depth
+  &lt;fct&gt;          &lt;int&gt;              &lt;dbl&gt;          &lt;dbl&gt;
+1 Biscoe           167               210.          2651.
+2 Dream            124               193.          2275.
+3 Torgersen         51               191.           940.</code></pre>
+</div>
+</div>
+<ul>
+<li><p><code>group_by()</code> is only useful in a pipeline (e.g.&nbsp;with <code>summarize()</code>), and pay attention to its behavior</p></li>
+<li><p>specify the <code>.groups</code> field to decide if observations remain grouped or not after summarizing (you can also use <code>ungroup()</code> for this as well)</p></li>
+</ul>
+</section>
+<section id="putting-it-all-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-it-all-together">Putting it all together…</h2>
+<p>As your own exercise, create a <strong>tidy</strong> dataset where each row == an island with the following variables:</p>
+<ul>
+<li>number of penguins,</li>
+<li>number of unique species on the island (see <code>help(unique)</code>),</li>
+<li>average <code>body_mass_g</code>,</li>
+<li>variance (see <code>help(var)</code>) of <code>bill_depth_mm</code></li>
+</ul>
+<p>Prior to making those variables, make sure to filter missings and also only consider female penguins. Then arrange the islands in order of the average <code>body_mass_g</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># INSERT YOUR CODE HERE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
