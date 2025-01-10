@@ -4,6 +4,6 @@ title: "Lectures"
 
 | Lecture   | Date    | Title                                | Links to slides                              |
 |-----------|---------|--------------------------------------|----------------------------------------|
-| 1         | Jan 14  | Intro and Big Ideas in Sports Analytics | Coming soon        |
+| 1         | Jan 14  | Intro and Big Ideas in Sports Analytics | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/11E6WuPEUj_knejOPa79LmPn5VVd0daxDs9WpFtYH_po/edit?usp=sharing)        |
 
 
