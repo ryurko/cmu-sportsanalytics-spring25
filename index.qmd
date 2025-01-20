@@ -11,8 +11,8 @@ Office hours schedule:
 | Name                 | Office hours       | Location        |
 |----------------------|--------------------|-----------------|
 | Prof Yurko           | Tuesdays @ 3:30 PM, Wednesdays @ 10:45 AM  | Baker Hall 132D |
-| Quang Nguyen      | TBA  | Zoom            |
-| Meg Ellingwood     | TBA  | Zoom            |
+| Quang Nguyen      | Thursdays @ 11 AM  | Zoom            |
+| Meg Ellingwood     | Mondays @ 10:30 Am  | Zoom            |
 
 
 There are no required textbooks for this course, but the following are useful free resources that I will sometimes refer to as recommended reading:
