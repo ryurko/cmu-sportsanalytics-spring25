@@ -7,4 +7,5 @@ title: "Demos"
 | 0      | Jan 14  | Into the tidyverse | [HTML](demos/00-into-tidyverse.qmd)  |
 | 1      | Jan 16  | Building an Expected Goals Model | [HTML](demos/01-logit-expected-goals.qmd)  |
 | 2      | Jan 21  | Calibration and Cross-Validation | [HTML](demos/02-calibration-cv.qmd)  |
+| 3      | Jan 23  | Multinomial Logistic Regression for Expected Points | [HTML](demos/03-multinom-logit.qmd)  |
 

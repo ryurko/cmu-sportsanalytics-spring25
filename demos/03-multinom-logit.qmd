@@ -1,0 +1,269 @@
+---
+title: 'Lecture 4: Multinomial Logistic Regression for Expected Points'
+format: html
+---
+
+## Introduction
+
+The goal of this demo is to introduce how to fit and evaluate a __multinomial logistic regression__ model in the context of modeling the next scoring event in American football. For this demo, we'll use an example dataset of NFL play-by-play data from 2013 to 2023. This is initialized with a column including the next score in the half for each play (you can find the script on Canvas, which creates the dataset using [`nflreadr`](https://nflreadr.nflverse.com/)). 
+
+The following code chunk reads in the relevant NFL play-by-play dataset (assuming it is in the correct directory) and performs some initial pre-processing relevant for the expected points model:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_ep_model_data <- read_rds(here::here("data/model_nfl_pbp_data.rds"))
+nfl_ep_model_data <- nfl_ep_model_data |>
+  # Make the No_Score level the reference level:
+  mutate(Next_Score_Half = fct_relevel(Next_Score_Half, "No_Score"),
+         # log transform of yards to go and indicator for two minute warning:
+         log_ydstogo = log(ydstogo),
+         # Changing down into a factor variable: 
+         down = factor(down))
+
+nfl_ep_model_data
+```
+
+
+## Fitting a multinomial logistic regression model
+
+In order to fit a multinomial logistic regression model in `R`, the easiest way is to use the `nnet` package with the `multinom` function. The following code chunk fits this model to the full dataset with the `Next_Score_Half` variable as the response with the context variables as the predictors:
+
+```{r}
+library(nnet)
+init_ep_model <- multinom(Next_Score_Half ~ half_seconds_remaining + 
+                            yardline_100 + down + log_ydstogo + 
+                            log_ydstogo * down + yardline_100 * down, 
+                          data = nfl_ep_model_data, maxit = 300)
+```
+
+Note the use of `maxit = 300` is to provide a sufficient number of steps for model fitting. You'll notice the printing of iteration steps here because this package is actually the simplest package used for fitting neural networks in `R`. 
+
+Notice what happens when we use the `summary()` function on this model (it takes some time to run):
+
+```{r}
+summary(init_ep_model)
+```
+
+You see the usual type of output (coefficients, standard errors, deviance, AIC), but we see coefficient estimates for each next score outcome (except for the reference level `No_Score`).
+
+Alternatively, it can be helpful to visualize the implied relationships between the various features and the outcome probabilities using visualization techniques. In order to do this, we first need to get the fitted probabilities for each scoring event. For a `nnet` multinomial logistic regression model, we can use the `predict()` function with `type = "probs"` as an input to return the matrix of probabilities for each event:
+
+```{r}
+next_score_probs <- predict(init_ep_model, 
+                            newdata = nfl_ep_model_data, type = "probs") |>
+  as_tibble()
+next_score_probs
+```
+
+The following code chunk joins these probabilities to the original dataset, and creates a visual that displays a smooth regression (we'll cover this later) of the model's probabilities as a function of certain inputs. _Note: these visuals do not represent the exact relationship, but rather just a summary of the relationships._ [This code](https://github.com/ryurko/nflscrapR-models/blob/master/R/nflWAR_paper_figures_code/nflWAR_ep_figures.R) was used to generate the figures in [my paper](https://arxiv.org/abs/1802.00998).
+
+```{r}
+#| fig-asp: 0.25
+#| fig-width: 16
+# Create the facetted version for each events probability based on down:
+nfl_ep_model_data |> 
+  # Join the probs:
+  bind_cols(next_score_probs) |>
+  # Only grab a subset of columns
+  dplyr::select(yardline_100, down, No_Score:Touchdown) |>
+  pivot_longer(No_Score:Touchdown,
+               # Name of the column for the outcomes
+               names_to = "next_score_type",
+               # Name of the column for the predicted probabilities
+               values_to = "pred_prob") |>
+  # Create a score value column to use for the color legend
+  mutate(event_value = case_when(
+                         next_score_type == "No_Score" ~ 0,
+                         next_score_type == "Touchdown" ~ 7,
+                         next_score_type == "Field_Goal" ~ 3,
+                         next_score_type == "Safety" ~ 2,
+                         next_score_type == "Opp_Field_Goal" ~ -3,
+                         next_score_type == "Opp_Safety" ~ -2,
+                         TRUE ~ -7),
+         # Label for down
+         down_label = case_when(
+                        down == 1 ~ "1st down",
+                        down == 2 ~ "2nd down",
+                        down == 3 ~ "3rd down",
+                        TRUE ~ "4th down")) |>
+  ggplot(aes(x = yardline_100, y = pred_prob, color = event_value,
+             group = next_score_type)) + 
+  geom_smooth(se = FALSE) + 
+    ylim(0,1) + 
+    facet_wrap(~down_label, ncol = 4) + 
+  theme_bw() +
+  labs(x = "Yards from opponent's end zone", y = "Predicted probability") +
+  scale_color_gradient2(low = "darkorange4", mid = "gray",
+                        high = "darkslateblue", 
+                        breaks = c(-7, -3, -2, 0, 2, 3, 7),
+                        labels=c(" -Touchdown (-7) ", " -Field Goal (-3) ",
+                                 " -Safety (-2) ", " No Score (0) ",
+                                 " Safety (2) ", " Field Goal (3) ", 
+                                 " Touchdown (7) "),
+                        guide = guide_legend(title = NULL, ncol = 7,
+                                             reverse = TRUE,
+                                             override.aes = list(size = 5))) +
+  theme(legend.background = element_rect(fill = "white"),
+        axis.title = element_text(size = 18),
+        axis.text.y = element_text(size = 16),
+        axis.text.x = element_text(size = 10),
+        legend.position = "bottom",
+        strip.background = element_blank(),
+        strip.text = element_text(size = 18),
+        legend.text = element_text(size = 12))
+```
+
+We can also create a figure that summarizes the relationships between different features with the actual variable of interest: __expected points__. The first step is to compute the expected points, which we can do using a simple line of code that weights each probability with a point value for the outcome:
+
+```{r}
+next_score_probs <- next_score_probs |>
+  mutate(ep = Touchdown * 7 + Field_Goal * 3 + Safety * 2 +
+           Opp_Touchdown * -7 + Opp_Field_Goal * -3 + Opp_Safety * -2)
+```
+
+And then use a similar approach as before, including historical models, to display the implied relationships:
+
+```{r}
+# Expected points relationships, for the historical models:
+
+# First the Carter model:
+carter_data <- tibble("yardline_100" = c(95, 85, 75, 65, 55, 45, 35, 25, 15, 5),
+                      "ep" = c(-1.245, -.637, .236, .923, 1.538, 2.392, 
+                               3.167, 3.681, 4.572, 6.041)) |>
+  mutate(model = "Carter")
+
+# and Hidden Game of Football model:
+hgf_data <- tibble("yardline_100" = c(100, 75, 50, 25, 0),
+                   "ep" = c(-2, 0, 2, 4, 6)) |>
+  mutate(model = "Hidden Game of Football")
+
+# Display our model's results by down and then compare to the historical
+# models from Carter and the Hidden Game of Football:
+nfl_ep_model_data |> 
+  bind_cols(next_score_probs) |>
+  # Only grab a subset of columns
+  dplyr::select(yardline_100, down, ep) |>
+  ggplot(aes(x = yardline_100, y = ep,
+             color = as.factor(down))) + 
+  geom_smooth(size = 2) + 
+  labs(x = "Yards from opponent's end zone",
+       y = "Expected points value",
+       color = "Model") +
+  theme_bw() + 
+  scale_y_continuous(limits = c(-4, 6),breaks = seq(-4, 6, 2)) + 
+  geom_line(data = bind_rows(carter_data, hgf_data),
+            aes(x = yardline_100, y = ep, color = model),
+            size = 2, linetype = "dashed") + 
+  geom_point(data = bind_rows(carter_data, hgf_data),
+             aes(x = yardline_100, y = ep, color = model),
+             size = 5, alpha = 0.5) + 
+  scale_x_continuous(breaks = seq(from = 5, to = 95, by = 10)) +
+  scale_color_manual(values = c("#0000FF",
+                                "#5537AA",
+                                "#AA6E55",
+                                "#FFA500",
+                                "seagreen4",
+                                "darkred"),
+                     labels = c("Multilogit - 1st down",
+                                "Multilogit - 2nd down",
+                                "Multilogit - 3rd down",
+                                "Multilogit - 4th down",
+                                "Carter",
+                                "Hidden Game of Football")) +
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12),
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 10),
+        legend.position = "bottom")
+```
+
+
+## Cross-validation calibration
+
+Since our goal relies on using the model's probability estimates, we can evaluate the model similar to the expected goals model: via out-of-sample calibration. The notable difference is that we need to assess how well the model is calibrated __for each scoring event__. The following code generates the __leave-one-year-out cross-validation__ predictions for each play in the dataset (note that the model fitting steps are printed for each season fold):
+
+```{r}
+init_loso_cv_preds <- 
+  map_dfr(unique(nfl_ep_model_data$season), 
+          function(x) {
+            # Separate test and training data:
+            test_data <- nfl_ep_model_data |> filter(season == x)
+            train_data <- nfl_ep_model_data |> filter(season != x)
+            # Fit multinomial logistic regression model:
+            ep_model <- 
+              multinom(Next_Score_Half ~ half_seconds_remaining + yardline_100 + down + 
+                         log_ydstogo + log_ydstogo * down + yardline_100 * down, 
+                       data = train_data, maxit = 300)
+            # Return dataset of class probabilities:
+            predict(ep_model, newdata = test_data, type = "probs") |>
+              as_tibble() |>
+              mutate(Next_Score_Half = test_data$Next_Score_Half,
+                     season = x)
+              })
+```
+
+We can then generate the calibration summary as before, with the caveat we need to do this for each outcome probability. Since the above code returns a dataset with a column for each outcome separately, we need to __pivot__ the dataset from wide to long so that there is a row for each play-outcome combination. We can do this using the useful `pivot_longer()` function as shown below, with the same summary steps as before:
+
+```{r}
+ep_cv_loso_calibration_results <- init_loso_cv_preds |>
+  # First specify which columns to turn into rows
+  pivot_longer(No_Score:Touchdown,
+               # Name of the column for the outcomes
+               names_to = "next_score_type",
+               # Name of the column for the predicted probabilities
+               values_to = "pred_prob") |>
+  # And then the same steps as before but now with grouping by score outcome:
+  mutate(bin_pred_prob = round(pred_prob / 0.05) * .05) |>
+  group_by(next_score_type, bin_pred_prob) |>
+  summarize(n_plays = n(), 
+            n_scoring_event = length(which(Next_Score_Half == next_score_type)),
+            bin_actual_prob = n_scoring_event / n_plays,
+            bin_se = sqrt((bin_actual_prob * (1 - bin_actual_prob)) / n_plays),
+            .groups = "drop") |>
+  mutate(bin_upper = pmin(bin_actual_prob + 2 * bin_se, 1),
+         bin_lower = pmax(bin_actual_prob - 2 * bin_se, 0))
+```
+
+And then with this dataset we can create calibration plots for each outcome, using similar code as before:
+
+```{r}
+ep_cv_loso_calibration_results |>
+  mutate(next_score_type = fct_relevel(next_score_type,
+                                       "Opp_Safety", "Opp_Field_Goal", 
+                                       "Opp_Touchdown", "No_Score", "Safety", 
+                                       "Field_Goal", "Touchdown"),
+  next_score_type = fct_recode(next_score_type, 
+                               "-Field Goal (-3)" = "Opp_Field_Goal",
+                               "-Safety (-2)" = "Opp_Safety", 
+                               "-Touchdown (-7)" = "Opp_Touchdown",
+                               "Field Goal (3)" = "Field_Goal", 
+                               "No Score (0)" = "No_Score",
+                               "Touchdown (7)" = "Touchdown", 
+                               "Safety (2)" = "Safety")) |>
+  ggplot(aes(x = bin_pred_prob, y = bin_actual_prob)) +
+  geom_abline(slope = 1, intercept = 0, color = "black", linetype = "dashed") +
+  geom_point(size = 0.5) +
+  geom_errorbar(aes(ymin = bin_lower, ymax = bin_upper)) + 
+  coord_equal() +   
+  scale_x_continuous(limits = c(0, 1)) + 
+  scale_y_continuous(limits = c(0, 1)) + 
+  labs(x = "Estimated next score probability", 
+       y = "Observed next score probability") + 
+  theme_bw() + 
+  theme(strip.background = element_blank(), 
+        axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~ next_score_type, ncol = 4)
+```
+
+_What stands out for you when inspecting the different calibration plots?_
+
+## Recap
+
++ Introduced fitting and interpreting a multinomial logistic regression model
+
++ Walked through steps for performing cross-validation calibration for multiple outcomes
+
+
+
