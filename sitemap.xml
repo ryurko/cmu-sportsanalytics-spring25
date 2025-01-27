@@ -1,31 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/index.html</loc>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/lectures.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
-    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/03-multinom-logit.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04b-cpoe.html</loc>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/01-logit-expected-goals.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/03-multinom-logit.html</loc>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/00-into-tidyverse.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/02-calibration-cv.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
   <url>
-    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/index.html</loc>
-    <lastmod>2025-01-22T19:40:23.203Z</lastmod>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04a-epa.html</loc>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos.html</loc>
+    <lastmod>2025-01-27T21:39:43.767Z</lastmod>
   </url>
 </urlset>
