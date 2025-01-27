@@ -8,4 +8,6 @@ title: "Demos"
 | 1      | Jan 16  | Building an Expected Goals Model | [HTML](demos/01-logit-expected-goals.qmd)  |
 | 2      | Jan 21  | Calibration and Cross-Validation | [HTML](demos/02-calibration-cv.qmd)  |
 | 3      | Jan 23  | Multinomial Logistic Regression for Expected Points | [HTML](demos/03-multinom-logit.qmd)  |
+| 4a      | Jan 28  | Exploring Expected Points Added | [HTML](demos/04a-epa.qmd)  |
+| 4b      | Jan 28  | Completion Percentage Over Expectation | [HTML](demos/04b-cpoe.qmd)  |
 

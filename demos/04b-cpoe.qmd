@@ -1,0 +1,294 @@
+---
+title: "Lecture 5: Completion Percentage Over Expectation"
+format: html
+---
+
+## Introduction
+
+The goal of this demo is begin our build-up to understanding the importance of __multilevel modeling__ in sports. We'll do this in the context of modeling completion probability for pass attempts in the NFL based on games during the 2023 and 2024 regular seasons. The dataset and code used to initialize it (`init_nfl_passing_data.R`) are available on Canvas. 
+
+The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_passing_data <- read_csv(here::here("data/nfl_passing_data.csv"))
+nfl_passing_data
+```
+
+
+## Modeling completion probability with logistic regression
+
+Similar to how we modeled expected goals in hockey, we will use a logistic regression model to estimate the probability of a complete pass (i.e., when `complete_pass` equals 1) based on a few variables:
+
+1. `pass_location`: a categorical variable denoting which side of the field the ball was thrown to, either `left`, `middle`, or `right` (based on manually charted data). We're going to be lazy and treat `left` as the reference level, but one should think more carefully about which level is more appropriate.
+
+2. `air_yards`: a quantitative variable indicating how many yards the ball traveled in the air _perpendicular_ to the line of scrimmage. This does not measure the actual distance traveled by the ball (e.g., if the QB throws the ball across the field but only to the line of scrimmage then it has air yards of 0), but still provides measure for the length of the pass.
+
+3. `qb_hit`: a binary indicator variable denoting whether or not the QB was hit on the play, serving as a proxy for plays where the QB observes pressure (i.e., a tougher situation to make a throw).
+
+The following code chunk fits the logistic regression model on all of the data:
+
+```{r}
+logit_completion <- glm(complete_pass ~ pass_location + air_yards + qb_hit,
+                        data = nfl_passing_data, family = "binomial")
+
+summary(logit_completion)
+```
+
+__EXERCISE: How should we evaluate this model? Perform the appropriate type of evaluation on your own time. Are there any variables that be adjusted in some way? Are there are any other variables in the dataset that we should account for?__
+
+## Computing CPOE by allocating residuals
+
+As discussed in lecture, __completion percentage over expectation (CPOE)__ is a very popular statistic in football analytics that is commonly used for measuring QB performance. The idea behind the stat is very simple: for every pass attempt we can compute the residual between the pass outcome (1 for completion, 0 for incomplete) and the estimated completion probability based on our model. We can then accumulate and average over these residuals to compute CPOE, representing how many more completions are observed than expected on average. For $n$ pass attempts, the CPOE is:
+
+$$
+CPOE = \frac{1}{n} \sum_i^n (Outcome_i - \widehat{Pr}(Outcome_i | X_i))
+$$
+where $Outcome_i$ is 1 for complete and 0 for incomplete or an interception.
+
+The following code chunk performs this calculation for every passer in the dataset, along with computing the observed number of completions and completion percentage, as well as the sum and average of the completion probability estimates to get the expected number of completions and expected completion percentage respectively.
+
+```{r}
+# First add the predicted probabilities to the dataset:
+nfl_passing_data <- nfl_passing_data |>
+  mutate(comp_prob = logit_completion$fitted.values,
+         # Compute the residual:
+         comp_resid = complete_pass - comp_prob)
+
+# Now create the QB summary table:
+qb_summary <- nfl_passing_data |>
+  group_by(passer_name_id) |>
+  summarize(n_pass = n(),
+            comps = sum(complete_pass),
+            comp_perc = mean(complete_pass),
+            ex_comps = sum(comp_prob),
+            ex_comp_perc = mean(comp_prob),
+            cpoe = mean(comp_resid),
+            .groups = "drop")
+qb_summary
+```
+
+We can create a custom table with the top 10 QBs in terms of CPOE (with a minimum of 200 passing attempts) using the [`gt`](https://gt.rstudio.com/) package:
+
+```{r}
+library(gt)
+
+qb_summary |>
+  filter(n_pass >= 200) |>
+  # Sort by CPOE in descending order:
+  arrange(desc(cpoe)) |>
+  # Only grab the top 10 QBs:
+  slice(1:10) |>
+  # Round the various stats and multiple the %s by 100 for display reasons
+  mutate(comp_perc = round(comp_perc * 100, digits = 4),
+         ex_comps = round(ex_comps, digits = 4),
+         ex_comp_perc = round(ex_comp_perc * 100, digits = 4),
+         cpoe = round(cpoe * 100, digits = 4)) |>
+  # Rename the columns for display purposes:
+  rename(`QB_ID` = passer_name_id,
+         `# Passes` = n_pass,
+         `# Comps` = comps,
+         `Comp %` = comp_perc,
+         `Exp # Comps` = ex_comps,
+         `Exp Comp %` = ex_comp_perc,
+         `CPOE` = cpoe) |>
+  gt() |>
+  tab_header(title = "Top 10 QBs based on CPOE (minimum of 200 pass attempts)",
+             subtitle = "Based on 2023-2024 regular season games accessed using nflreadr") |>
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = "right",
+        color = "black",
+        weight = px(3)
+      )
+    ),
+    # Where to place the thick border
+    locations = list(
+      cells_body(
+        columns = c(`# Passes`)
+      )
+    )
+  ) |>
+  # Which variables to color by
+  data_color(columns = c(`Comp %`,
+                         `Exp Comp %`,
+                         `CPOE`),
+             colors = scales::col_numeric(
+               palette = c("darkblue", "darkorange"),
+               domain = NULL
+             ))
+
+```
+
+But this table only displays the QB rankings. We can do the same for receivers, from the view point of catches over expectation:
+
+```{r}
+rec_summary <- nfl_passing_data |>
+  group_by(receiver_name_id) |>
+  summarize(n_pass = n(),
+            n_rec = sum(complete_pass),
+            catch_perc = mean(complete_pass),
+            ex_rec = sum(comp_prob),
+            ex_catch_perc = mean(comp_prob),
+            cpoe = mean(comp_resid),
+            .groups = "drop")
+
+rec_summary |>
+  filter(n_pass >= 50) |>
+  # Sort by CPOE in descending order:
+  arrange(desc(cpoe)) |>
+  # Only grab the top 10 QBs:
+  slice(1:10) |>
+  # Round the various stats and multiple the %s by 100 for display reasons
+  mutate(catch_perc = round(catch_perc * 100, digits = 4),
+         ex_rec = round(ex_rec, digits = 4),
+         ex_catch_perc = round(ex_catch_perc * 100, digits = 4),
+         cpoe = round(cpoe * 100, digits = 4)) |>
+  # Rename the columns for display purposes:
+  rename(`Receiver_ID` = receiver_name_id,
+         `# Targets` = n_pass,
+         `# Catches` = n_rec,
+         `Catch %` = catch_perc,
+         `Exp # Catches` = ex_rec,
+         `Exp Catch %` = ex_catch_perc,
+         `CPOE` = cpoe) |>
+  gt() |>
+  tab_header(title = "Top 10 receivers based on CPOE (minimum of 50 targets)",
+             subtitle = "Based on 2023-2024 regular season games accessed using nflreadr") |>
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = "right",
+        color = "black",
+        weight = px(3)
+      )
+    ),
+    # Where to place the thick border
+    locations = list(
+      cells_body(
+        columns = c(`# Targets`)
+      )
+    )
+  ) |>
+  # Which variables to color by
+  data_color(columns = c(`Catch %`,
+                         `Exp Catch %`,
+                         `CPOE`),
+             colors = scales::col_numeric(
+               palette = c("darkblue", "darkorange"),
+               domain = NULL
+             ))
+
+```
+
+
+And again for opposing defenses:
+
+
+```{r}
+def_summary <- nfl_passing_data |>
+  group_by(defteam) |>
+  summarize(n_pass = n(),
+            comps = sum(complete_pass),
+            comp_perc = mean(complete_pass),
+            ex_comps = sum(comp_prob),
+            ex_comp_perc = mean(comp_prob),
+            cpoe = mean(comp_resid),
+            .groups = "drop")
+
+def_summary |>
+  # Sort by CPOE in ascending order:
+  arrange(cpoe) |>
+  # Round the various stats and multiple the %s by 100 for display reasons
+  mutate(comp_perc = round(comp_perc * 100, digits = 4),
+         ex_comps = round(ex_comps, digits = 4),
+         ex_comp_perc = round(ex_comp_perc * 100, digits = 4),
+         cpoe = round(cpoe * 100, digits = 4)) |>
+  # Rename the columns for display purposes:
+  rename(`Team` = defteam,
+         `# Passes` = n_pass,
+         `# Comps` = comps,
+         `Comp %` = comp_perc,
+         `Exp # Comps` = ex_comps,
+         `Exp Comp %` = ex_comp_perc,
+         `CPOE` = cpoe) |>
+  gt() |>
+  tab_header(title = "Team defenses ranked based on CPOE",
+             subtitle = "Based on 2023-2024 regular season games accessed using nflreadr") |>
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = "right",
+        color = "black",
+        weight = px(3)
+      )
+    ),
+    # Where to place the thick border
+    locations = list(
+      cells_body(
+        columns = c(`# Passes`)
+      )
+    )
+  ) |>
+  # Which variables to color by
+  data_color(columns = c(`Comp %`,
+                         `Exp Comp %`,
+                         `CPOE`),
+             colors = scales::col_numeric(
+               palette = c("darkblue", "darkorange"),
+               domain = NULL
+             ))
+```
+
+
+The point of going through these three different rankings is to indicate how each group of variables: QB, receiver, and defense, each display variation that we ideally want to account for in a model. This will be the topic of discussion for the next so many lectures.
+
+## Estimating coefficients for QBs
+
+As a starting point, we'll fit another logistic regression model for completion probability but now we'll account for the QB attempting the pass via a categorical variable to estimate coefficients for each passer (note this will take a slightly longer amount of time to run):
+
+```{r}
+passer_logit <- glm(complete_pass ~ pass_location + air_yards + qb_hit +
+                      passer_name_id,
+                    data = nfl_passing_data, family = "binomial")
+summary(passer_logit)
+```
+
+
+Obviously there are many more coefficients displayed in the summary output, with a number of players that I've never heard of before that seem to have rather large coefficient estimates... likely due to limited sample size (more on that in the lectures ahead).
+
+We can examine what the distribution of the coefficients looks like using the `tidy()` function from the [`broom`](https://broom.tidymodels.org/index.html) package which helps grab relevant model output and puts it in a tidy table:
+
+```{r}
+library(broom)
+
+# Get the model coefficients:
+logit_coef_table <- tidy(passer_logit)
+
+# Only display the estimates for the passer_name_id coefficients:
+logit_coef_table |>
+  filter(str_detect(term, "passer_name_id")) |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram(color = "black", fill = "blue", alpha = 0.7) +
+  labs(x = "Passer coefficient estimate",
+       y = "Count") +
+  theme_bw()
+```
+
+And if we focus on the middle portion of the distribution:
+
+```{r}
+logit_coef_table |>
+  filter(str_detect(term, "passer_name_id"),
+         estimate < -10, estimate > -15) |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram(color = "black", fill = "blue", alpha = 0.7) +
+  labs(x = "Passer coefficient estimate",
+       y = "Count") +
+  theme_bw()
+```
+
+This suggests we can model the QB coefficients according to a distribution! And that leads us into the next lecture's material...

@@ -1,0 +1,288 @@
+---
+title: "Lecture 5: Exploring Expected Points Added"
+format: html
+---
+
+## Introduction
+
+The goal of this demo is to introduce you to basic ways of summarizing and visualizing football statistics based on expected points added (EPA), as measured by [`nflfastR`](https://www.nflfastr.com/index.html). Instead of manually computing EPA based on your own EP estimates, we'll just use the `nflfastR` values since: (1) they're extremely popular and (2) the code to compute EPA is really annoying to write (it's a sloppy situation of `ifelse`/`case_when` situations). The code that follows in this demo borrows heavily from the [`nflfastR` beginner's guide](https://www.nflfastr.com/articles/beginners_guide.html). 
+
+You will need the following packages installed (besides the `tidyverse`):
+
++ [`ggrepel`](https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html)
+
++ [`nflreadr`](https://nflreadr.nflverse.com/)
+
++ [`nflplotR`](https://nflplotr.nflverse.com/)
+
+For context, both `nflreadr` and `nflplotR` are packages inside the [`nflverse`](https://nflverse.nflverse.com/). 
+
+
+## Reading in NFL play-by-play data
+
+We'll start by reading in the play-by-play data from NFL games during the 2024 regular season. Since we are interested in creating statistics based on EPA, we will only consider rows in the dataset where `epa` is not missing:. The code chunk below reads in the data using `nflreadr`. You'll notice that the play-by-play data contains a large number of columns with various statistics and other measurements provided by `nflfastR`. You can find a full glossary of the columns [here](https://nflreadr.nflverse.com/articles/dictionary_pbp.html).
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(nflreadr)
+
+# Load the 2024 data:
+nfl_2024_pbp <- load_pbp(2024) |>
+  # Only use games from the regular season
+  filter(season_type == "REG", 
+         # and where epa is not missing along with other issues for the 
+         # teams involved either offense (posteam) or defense (defteam)
+         !is.na(epa), !is.na(posteam), posteam != "",
+         !is.na(defteam), defteam != "")
+
+# Preview the data
+nfl_2024_pbp
+```
+
+
+## Summarizing and Visualizing Total EPA
+
+With this dataset, we're now ready to actually compute various EPA-related statistics to measure team performance. The following code chunk computes the total EPA (i.e., sum of EPA), EPA per play, and success rate for each team when they are on offense:
+
+```{r}
+team_off_summary <- nfl_2024_pbp |>
+  group_by(posteam) |>
+  summarize(total_epa = sum(epa),
+            ave_epa = mean(epa),
+            success_rate = mean(as.numeric(epa > 0)),
+            .groups = "drop")
+team_off_summary
+```
+
+Next, we can display a ranking of the teams based on the total EPA via a bar chart ordered by the total EPA. For cosmetics, I flip the x/y axes here to display the bars horizontally, making the team abbreviations easier to see along the left-hand side. Note the use of `reorder()` to reorder the teams by their `total_epa`.
+
+```{r}
+team_off_summary |>
+  ggplot(aes(x = reorder(posteam, total_epa), 
+             y = total_epa)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Team", y = "Total EPA on offense",
+       caption = "Data courtesy of nflreadr") +
+  coord_flip() +
+  theme_bw()
+```
+
+__NOTE: From looking at this visual, we observe symmetry in terms of team with positive and negative total EPA. If we observed an imbalance, with favoring of one direction over another, then I would be concerned about the EPA values. Such type of asymmetry may be due to changes in the scoring environment for a particular season relative to previous seasons in the expected points model's training dataset.__
+
+We can easily change the bar colors to match each team's respective color(s) by loading in team data via `load_teams()` from `nflreadr`:
+
+```{r}
+team_data <- load_teams()
+team_data
+```
+
+To add the colors to our figure, we can join the `team_color` to our summary table:
+
+```{r}
+team_off_summary <- team_off_summary |>
+  inner_join(dplyr::select(team_data, team_abbr, team_color),
+             by = c("posteam" = "team_abbr"))
+team_off_summary
+```
+
+And then recreate our bar chart using these colors:
+
+```{r}
+team_off_summary |>
+  ggplot(aes(x = reorder(posteam, total_epa), 
+             y = total_epa)) +
+  geom_bar(stat = "identity",
+           # Note this is one way to set color without mapping inside aes
+           # that avoids a legend, it's convenient for using many colors with
+           # potential repeats like we have with teams
+           fill = team_off_summary$team_color) +
+  labs(x = "Team", y = "Total EPA on offense",
+       caption = "Data courtesy of nflreadr") +
+  coord_flip() +
+  theme_bw()
+```
+
+We can repeat the same steps from a defensive perspective as well, by first creating the defense summary:
+
+```{r}
+team_def_summary <- nfl_2024_pbp |>
+  group_by(defteam) |>
+  summarize(total_epa = sum(epa),
+            ave_epa = mean(epa),
+            # Flip success rate to be negative
+            success_rate = mean(as.numeric(epa < 0)),
+            .groups = "drop")
+team_def_summary
+```
+
+Then join the team colors again:
+
+```{r}
+team_def_summary <- team_def_summary |>
+  inner_join(dplyr::select(team_data, team_abbr, team_color),
+             by = c("defteam" = "team_abbr"))
+team_def_summary
+```
+
+And create the appropriate visualization for defense where negative values are better:
+
+```{r}
+team_def_summary |>
+  ggplot(aes(x = reorder(defteam, total_epa), 
+             y = total_epa)) +
+  geom_bar(stat = "identity",
+           fill = team_def_summary$team_color) +
+  labs(x = "Team", y = "Total EPA on defense",
+       caption = "Data courtesy of nflreadr") +
+  coord_flip() +
+  theme_bw()
+```
+
+
+## Visualizing offense and defense performance together
+
+We can also visualize the offense and defensive performance for teams simultaneously with scatterplots. However, the first step is to merge the two tables together. There are a variety of ways to do this, but the simplest in this case is to first rename the columns in each table and join based on the team abbreviation columns:
+
+```{r}
+# First rename the team offense columns:
+team_off_summary <- team_off_summary |>
+  rename(team = posteam, 
+         off_total_epa = total_epa,
+         off_ave_epa = ave_epa,
+         off_success_rate = success_rate)
+
+# Repeat for defense:
+team_def_summary <- team_def_summary |>
+  rename(team = defteam, 
+         def_total_epa = total_epa,
+         def_ave_epa = ave_epa,
+         def_success_rate = success_rate)
+
+# And join together (dropping the team_color in the defense table):
+team_summary <- team_off_summary |>
+  inner_join(dplyr::select(team_def_summary, -team_color),
+             by = "team")
+team_summary
+```
+
+Next, using this dataset we can make a scatterplot of EPA per play with the color for each team:
+
+```{r}
+team_summary |>
+  ggplot(aes(x = off_ave_epa, y = def_ave_epa)) +
+  geom_point(color = team_summary$team_color,
+             alpha = 0.75) +
+  # Add reference lines at 0:
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  labs(x = "Offense EPA per play",
+       y = "Defense EPA per play (negative is better)",
+       caption = "Data courtesy of nflreadr") +
+  theme_bw()
+```
+
+Of course this visual makes it difficult to know what point corresponds to each team. We can add text labels to the points using `ggrepel` and `geom_text_repel`:
+
+```{r}
+library(ggrepel)
+team_summary |>
+  ggplot(aes(x = off_ave_epa, y = def_ave_epa)) +
+  geom_point(color = team_summary$team_color,
+             alpha = 0.75) +
+  geom_text_repel(aes(label = team)) +
+  # Add reference lines at 0:
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  labs(x = "Offense EPA per play",
+       y = "Defense EPA per play (negative is better)",
+       caption = "Data courtesy of nflreadr") +
+  theme_bw()
+```
+
+This is fairly easy to read, but thanks to `nflplotR` we can replace the points and team abbreviations with images of the team logos instead. As a word of caution, using the team logos may not be optimal all the time since their size can lead to overlap making it difficult to see what is directly going on. But using `geom_nfl_logos()` we can display the team logos instead of points, along with adjustments for the transparency and size of the logos. Furthermore, `nflplotR` includes a useful `geom_mean_lines()` function to display the averages for the `x` and `y` aesthetics via red dashed lines (although you can customize them). The following code chunk shows how you can make such a figure:
+
+```{r}
+library(nflplotR)
+team_summary |>
+  ggplot(aes(x = off_ave_epa, y = def_ave_epa)) +
+  # Add the logo geom layer:
+  geom_nfl_logos(aes(team_abbr = team), width = 0.075, alpha = 0.75) +
+  # Add mean lines:
+  geom_mean_lines(aes(x0 = off_ave_epa, y0 = def_ave_epa)) +
+  # Add reference lines at 0:
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "gray") +
+  labs(x = "Offense EPA per play",
+       y = "Defense EPA per play (negative is better)",
+       caption = "Data courtesy of nflreadr") +
+  theme_bw()
+```
+
+## Summarizing and visualizing QB performance
+
+As the last example in this demo, we'll consider __naive__ player evaluation based on measures of QB performance on passing plays. The following code first finds the passing plays, and then computes similar EPA-based statistics as before but at the passer-level instead of team-level. Additionally, we'll compute completion percentage over expectation (CPOE) based on the `nflfastr` model for completion probability where `cpoe` is simply `complete_pass - cp` (`complete_pass` is a binary indicator for whether or not the pass is complete and `cp` is the predicted probability of a complete pass).
+
+```{r}
+passer_summary <- nfl_2024_pbp |>
+  filter(play_type == "pass") |>
+  # group by the passer play name and id columns:
+  group_by(passer_player_name, passer_player_id) |>
+  # Now summarize (also storing the last team they were on)
+  summarize(team = last(posteam),
+            n_plays = n(),
+            ave_epa = mean(epa),
+            success_rate = mean(epa > 0),
+            cpoe = mean(cpoe, na.rm = TRUE),
+            .groups = "drop") |>
+  # Join the team colors with left_join
+  left_join(dplyr::select(team_data, team_abbr, team_color),
+            by = c("team" = "team_abbr"))
+passer_summary
+```
+
+We can now visualize the CPOE and EPA per passing play (including sacks) for QBs during the 2024 season (with an arbitrary threshold of at least 200 plays for ease):
+
+```{r}
+passer_summary |>
+  filter(n_plays >= 200) |>
+  ggplot(aes(x = cpoe, y = ave_epa)) +
+  # Note the filter within here could have been avoided if I just filtered
+  # beforehand to store a separate dataset entirely:
+  geom_point(color = pull(filter(passer_summary, 
+                                 n_plays >= 200), 
+                          team_color),
+             aes(size = n_plays),
+             alpha = 0.75) +
+  geom_text_repel(aes(label = passer_player_name)) +
+  # Add mean lines
+  geom_mean_lines(aes(x0 = cpoe, y0 = ave_epa)) +
+  labs(x = "Completion percentage over expectation (based on nflfastR model)",
+       y = "EPA per passing play (with sacks included)",
+       caption = "Data courtesy of nflreadr",
+       size = "Number of plays") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+While this plot probably passes the "eye test" (i.e., it generally agrees with who we think are good vs bad players), it's an oversimplification to assign all EPA or CPOE credit to an individual player! We'll focus on CPOE for the next so many lectures in approaching this topic of properly allocating residuals.
+
+## Additional Resources
+
+If you're interested in American football data, there are several great resources readily available for you to access:
+
++ [`nflverse`](https://nflverse.nflverse.com/) is your one-stop shop for all things NFL data in `R`. There's a great function within `nflreadr` called [`load_ftn_charting()`](https://nflreadr.nflverse.com/reference/load_ftn_charting.html) that provides a variety of additional context (e.g., is it a screen pass, play-action pass, etc.) based on manual charting courtesy of [FTNData.com](FTNData.com).
+
++ [`nfl_data_py`](https://pypi.org/project/nfl-data-py/) is the Python equivalent that is just a wrapper for `nflfastR` data.
+
++ [Open Source Football](https://opensourcefootball.com/) - a cool website that is effectively a repository of work people have done with public football data, including code. Note that there are likely mistakes made in the various posts regarding modeling techniques, but you'll find ways to access interesting datasets and potentially get ideas for projects.
+
++ A useful coding book with interesting examples: [https://bradcongelio.com/nfl-analytics-with-r-book/](https://bradcongelio.com/nfl-analytics-with-r-book/) (note that I do not recommend the modeling sections of the book since many important details are omitted).
+
++ [`cfbfastR`](https://cfbfastr.sportsdataverse.org/) for college football data (including recruiting data!).
+
++ [`ffverse`](https://www.ffverse.com/) for all things fantasy football.
+
+
+
