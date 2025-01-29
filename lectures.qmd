@@ -9,5 +9,6 @@ title: "Lectures"
 | 3         | Jan 21  | Building an Expected Goals Model (Cont.) | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1vk8DwGvKSV_Ln8-lUmDSiij8EczrrDBzW3xEGIrvChI/edit?usp=sharing)        |
 | 4         | Jan 23  | Building an Expected Points Model | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1iABRMbNXHKkstzU_fHEMexllLkeS2QedAgwouh7IsQQ/edit?usp=sharing)        |
 | 5         | Jan 28  | Expected Points (cont.) and CPOE | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/15CRgNs4CQLRGB_QGjNxlWAMKm-QeaZ9D2c0wsed5_FA/edit?usp=sharing)        |
+| 6         | Jan 30  | CPOE and introduction to multilevel modeling | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1o6KkFjaMnM8UDEhwctfC6GYX1BLE_-clHpCVCSJJysk/edit?usp=sharing)        |
 
 

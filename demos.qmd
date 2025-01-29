@@ -10,4 +10,5 @@ title: "Demos"
 | 3      | Jan 23  | Multinomial Logistic Regression for Expected Points | [HTML](demos/03-multinom-logit.qmd)  |
 | 4a      | Jan 28  | Exploring Expected Points Added | [HTML](demos/04a-epa.qmd)  |
 | 4b      | Jan 28  | Completion Percentage Over Expectation | [HTML](demos/04b-cpoe.qmd)  |
+| 5      | Jan 30  | Intro to multilevel modeling | [HTML](demos/05-intro-multilevel-models.qmd)  |
 

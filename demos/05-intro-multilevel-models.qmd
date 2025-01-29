@@ -1,0 +1,312 @@
+---
+title: "Lecture 6: Intro to multilevel modeling"
+format: html
+---
+
+## Introduction
+
+The goal of this demo is to walk through the initial steps of __multilevel modeling__ in the context of modeling pass completion probability. We'll continue where we left off in the `cpoe.qmd` demo, using a dataset corresponding to pass attempts in NFL regular season games during the 2023 and 2024 seasons. You can find the dataset and code to create the data (`init_nfl_passing_data.R`) on Canvas. 
+
+The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_passing_data <- read_csv(here::here("data/nfl_passing_data.csv"))
+nfl_passing_data
+```
+
+## Modeling completion probability with logistic regression
+
+In the previous demo, we fit a logistic regression model to estimate the probability of a complete pass (i.e., when `complete_pass == 1`) based on a few variables:
+
+1. `pass_location`: a categorical variable denoting which side of the field the ball was thrown to, either `left`, `middle`, or `right` (based on manually charted data). We're going to be lazy and treat `left` as the reference level, but one should think more carefully about which level is more appropriate.
+
+2. `air_yards`: a quantitative variable indicating how many yards the ball traveled in the air _perpendicular_ to the line of scrimmage. This does not measure the actual distance traveled by the ball (e.g., if the QB throws the ball across the field but only to the line of scrimmage then it has traveled 0 air yards), but still provides measure for the length of the pass.
+
+3. `qb_hit`: a binary indicator variable denoting whether or not the QB was hit on the play, serving as a proxy for plays where the QB observes pressure (i.e., a tougher situation to make a throw).
+
+The following code chunk fits this logistic regression model on all of the data:
+
+```{r}
+logit_completion <- glm(complete_pass ~ pass_location + air_yards + qb_hit,
+                        data = nfl_passing_data, family = "binomial")
+
+summary(logit_completion)
+```
+
+
+## Multiple levels in the data
+
+In the previous logistic regression model, we naively ignored the structure of the data: there are repeated pass attempts by quarterbacks (QBs, `passer_name_id`), repeatedly to a set of receivers (`receiver_name_id`), against different defenses (`defteam`). For the sake of this intro demo, we will just focus on QBs and will return to handling receivers and defenses later. 
+
+Ignoring receivers and defenses, there are two __levels__ in the dataset:
+
+1. __Level One__: individual pass attempts, which are the the simplest and most frequent unit of observation in the dataset. For each pass attempt we have information describing the pass such as the `pass_location`, `air_yards`, and if the QB was hit on the play `qb_hit`.
+
+2. __Level Two__: the QB attempting the pass, which is a __larger observational unit__. In other words, we observe the same QB across multiple pass attempts - which should make us think the outcome of such attempts are correlated with each other.
+ 
+When we think about performing preliminary exploratory data analysis (EDA), we should consider it at both levels of the data. This includes starting with a basic summary of the response at the pass level:
+
+```{r}
+nfl_passing_data |>
+  ggplot(aes(x = as.factor(complete_pass))) +
+  geom_bar() +
+  scale_x_discrete(labels = c("Incomplete", "Complete")) +
+  labs(x = "Pass outcome", y = "Number of passes") +
+  theme_bw()
+```
+
+As well seeing how the outcome varies as a function of the different variables, such as the pass location:
+
+```{r}
+nfl_passing_data |>
+  ggplot(aes(x = pass_location,
+             fill = as.factor(complete_pass))) +
+  geom_bar() +
+  ggthemes::scale_fill_colorblind(labels = c("Incomplete", "Complete")) +
+  labs(x = "Pass location", y = "Number of passes",
+       fill = "Pass outcome") +
+  theme_bw()
+```
+
+And by making an empirical logit plot (similar to the `logit_expected_goals.qmd` demo) to view the relationship between the response with the air yards variable:
+
+```{r}
+nfl_passing_data |>
+  mutate(air_yards_bin = cut_number(air_yards, 10)) |>
+  group_by(air_yards_bin) |>
+  summarize(cp = mean(complete_pass),
+            air_yards_midpoint = median(air_yards),
+            .groups = "drop") |>
+  mutate(cp = pmax(cp, 0.0001),
+         emp_logit = log(cp / (1 - cp))) |>
+  ggplot(aes(x = air_yards_midpoint, y = emp_logit)) +
+  geom_point() +
+  geom_smooth() +
+  labs(x = "Air yards (midpoint of bins)",
+       y = "Empirical logits") +
+  theme_bw()
+```
+
+In order to consider EDA for Level Two, we can start by making a summary dataset with one row for each QB in the data along with appropriate summaries of the different considered explanatory variables:
+
+```{r}
+# Start with the basic summary:
+qb_summary <- nfl_passing_data |>
+  group_by(passer_name_id) |>
+  summarize(n_passes = n(),
+            cp = mean(complete_pass),
+            fraction_hit = mean(qb_hit),
+            fraction_left = mean(pass_location == "left"),
+            fraction_middle = mean(pass_location == "middle"),
+            fraction_right = mean(pass_location == "right"),
+            ave_air_yards = mean(air_yards),
+            .groups = "drop")
+```
+
+And then we can repeat the EDA process at this level, such as viewing the distribution of completion percentages for each QB:
+
+```{r}
+qb_summary |>
+  ggplot(aes(x = cp)) +
+  geom_histogram(breaks = seq(0, 1, by = 0.05), closed = "left") +
+  labs(x = "Completion %",
+       y = "Number of QBs") +
+  theme_bw()
+```
+
+As well as relationships between completion percentages with the different variables, such as average air yards:
+
+```{r}
+qb_summary |>
+  ggplot(aes(x = ave_air_yards, y = cp)) +
+  geom_point(aes(size = n_passes), alpha = 0.25) +
+  labs(x = "Average air yards thrown each pass",
+       y = "Completion %",
+       size = "# passes") +
+  theme_bw()
+```
+
+To make this easier to see, here is the same plot but for passers with at least 100 attempts:
+
+```{r}
+qb_summary |>
+  filter(n_passes >= 100) |>
+  ggplot(aes(x = ave_air_yards, y = cp)) +
+  geom_point(aes(size = n_passes), alpha = 0.25) +
+  labs(x = "Average air yards thrown each pass",
+       y = "Completion %",
+       size = "# passes") +
+  theme_bw()
+```
+
+We can also view the Level One EDA for each observation unit in Level Two. For instance, the code chunk below displays the empirical logit plots for the nine QBs with the most passing attempts: 
+
+```{r}
+top_attempt_qbs <- qb_summary |>
+  arrange(desc(n_passes)) |>
+  slice(1:9) |>
+  pull(passer_name_id)
+
+nfl_passing_data |>
+  filter(passer_name_id %in% top_attempt_qbs) |>
+  mutate(air_yards_bin = cut_number(air_yards, 10)) |>
+  group_by(passer_name_id, air_yards_bin) |>
+  summarize(cp = mean(complete_pass),
+            air_yards_midpoint = median(air_yards),
+            .groups = "drop") |>
+  mutate(cp = pmax(cp, 0.0001),
+         emp_logit = log(cp / (1 - cp))) |>
+  ggplot(aes(x = air_yards_midpoint, y = emp_logit)) +
+  geom_point() +
+  # Add a smooth trend line
+  geom_smooth(se = FALSE) +
+  # Facet by QB:
+  facet_wrap(~passer_name_id, ncol = 3) +
+  labs(x = "Air yards (midpoint of bins)",
+       y = "Empirical logits") +
+  theme_bw() +
+  theme(strip.background = element_blank())
+```
+
+From this we can see slight differences in the relationship with air yards across the small sample of QBs. Patrick Mahomes displays a relatively monotone relationships, while players such as Geno Smith and Josh Allen display a clear nonlinear relationship between the empirical logit and air yards.
+
+## Modeling strategies
+
+When handling data of this structure, we have a few different options for how to approach modeling the data. For ease, we'll only consider the `air_yards` variable as a coefficient in the following models below. But the same ideas can be applied to models with more features.
+
+### 1) Naive Level One Model
+
+Our starting point, is the model we already considered that completely ignores the QB-level of the data. The following code chunk fits this logistic regression model as a function of the `air_yards` plus an intercept:
+
+```{r}
+init_logit <- glm(complete_pass ~ air_yards,
+                  data = nfl_passing_data, family = "binomial")
+
+summary(init_logit)
+```
+
+However, this completely ignores the correlated structure of the data and we ideally like to somehow account for the QB in the model.
+
+### 2) Two-Stage Modeling Approach
+
+Alternatively, __since we believe QBs are independent of each other__, we can fit separate logistic regression models for each QB in the dataset. For example, the code chunk below fits the same logistic regression model as above but only for pass attempts by Patrick Mahomes:
+
+```{r}
+mahomes_passes <- nfl_passing_data |>
+  filter(str_detect(passer_name_id, "Mahomes"))
+
+mahomes_logit <- glm(complete_pass ~ air_yards,
+                     data = mahomes_passes, family = "binomial")
+
+summary(mahomes_logit)
+```
+
+If we compare the Mahomes' model to the naive model, we notice some slight differences in the intercept and coefficient estimates as well as larger standard errors (due to the smaller sized dataset).
+
+We can repeat this for every single QB in the dataset, storing the intercept and coefficients in a table. For simplicity, we'll only do this with the `air_yards` variable since the categorical variables require observing the different levels at least once. You can ignore the warning messages that are popping up for players with only one observation.
+
+```{r}
+#| warning: false
+qb_coef_table <- 
+  map_dfr(unique(nfl_passing_data$passer_name_id),
+          function(qb_i) {
+            
+            qb_i_data <- nfl_passing_data |>
+              filter(passer_name_id == qb_i)
+            
+            qb_i_model <- glm(complete_pass ~ air_yards,
+                              data = qb_i_data, family = "binomial")
+            
+            # Return the tidy coefficient table:
+            broom::tidy(qb_i_model) |>
+              mutate(qb = qb_i)
+          })
+# Ignore the warning messages that are displayed
+```
+
+We can visualize what the distribution for the intercepts and coefficients looks like:
+
+```{r}
+qb_coef_table |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram() +
+  facet_wrap(~term, ncol = 1, scales = "free_x") +
+  labs(x = "Estimate value") +
+  theme_bw()
+```
+
+There are so notable extreme values making this figure difficult to read. We can zoom in on the relevant portions with appropriate filters:
+
+```{r}
+qb_coef_table |>
+  # First filter for the Intercept condition, based on reasonable cutoff
+  filter((term == "(Intercept)" & abs(estimate) <= 3) |
+           # And then for air_yards:
+           (term == "air_yards" & abs(estimate) <= .5)) |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram() +
+  facet_wrap(~term, ncol = 1, scales = "free_x") +
+  labs(x = "Estimate value") +
+  theme_bw()
+```
+
+Based on this plot, we may decide to try modeling the intercepts and slopes at the QB level _via their own regression models_. In other words, we can treat the intercepts and slopes as the response variable, and fit a regression model (maybe as a function of QB level variables) to model the coefficients.
+
+```{r}
+# First filter to create separate datasets for each term:
+intercept_data <- qb_coef_table |>
+  filter(term == "(Intercept)")
+slope_data <- qb_coef_table |>
+  filter(term == "air_yards")
+
+# And now fit intercept-only models:
+intercept_lm <- lm(estimate ~ 1, data = intercept_data)
+slope_lm <- lm(estimate ~ 1, data = slope_data)
+```
+
+The summary of these models provide us the averages and estimates for the variances of their respective distributions:
+
+```{r}
+summary(intercept_lm)
+```
+
+```{r}
+summary(slope_lm)
+```
+
+There are clear limitations with this type of approach:
+
+1. __We are completely ignoring the number of observations (in this case pass attempts) for each QB__, treating QBs with only a small number of attempts the same as QBs with many attempts.
+
+2. __We drop players with insufficient number of observations for slopes__.
+
+3. __We are not sharing information across the QBs when modeling the relationship between air yards and completion probability__. Ideally, we want to leverage the information across the full dataset in order to provide better estimates for the relationships.
+
+This leads us to the ideal approach for modeling such data...
+
+### 3) Unified Multilevel Model
+
+In order to fit multilevel models in `R`, we need to use the [`lme4` package](https://cran.r-project.org/web/packages/lme4/index.html), which follows a unique syntax that we'll breakdown in the lectures ahead. First install the package:
+
+```{r}
+#| eval: false
+install.packages("lme4")
+```
+
+Then we can fit a generalized linear multilevel model (GLMM) using the `glmer()` function in the package, which is analogous to the `glm()` function in `R`. Note that in Homework 2 you will use the `lmer()` function which is used for modeling continuous data under the assumption of Gaussian errors. In this problem, we are modeling completion probability so we are relying on a linear model for the log odds function. The following code chunk demonstrates how to fit a GLMM for completion probability with __random effects__ for QB intercepts and air yards slopes, along with a __fixed effect__ for air yards:
+
+```{r}
+library(lme4)
+glmm_completion <- glmer(complete_pass ~ air_yards + (air_yards | passer_name_id),
+                         family = binomial, data = nfl_passing_data)
+
+summary(glmm_completion)
+```
+
+_(You can ignore the warning messages for now...)_
+
+We will break down the steps for building multilevel models in the lectures ahead, starting with simple varying intercepts models in the next lecture.
+
