@@ -1,0 +1,158 @@
+---
+title: "Lecture 7: Varying intercepts and slopes"
+format: html
+---
+
+## Introduction
+
+The purpose of this demo is to walk through fitting and interpreting the output of __varying intercepts and slopes__ multilevel models in the context of modeling pass completion probability. We'll continue to use a dataset corresponding to pass attempts in NFL regular season games during the 2023 and 2024 seasons from last week. You can find the dataset and code to create the data (`init_nfl_passing_data.R`) on Canvas in the demos/week3 folder. 
+
+The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_passing_data <- read_csv(here::here("data/nfl_passing_data.csv"))
+nfl_passing_data
+```
+
+## Initial model: varying intercepts only
+
+The first model we will consider is an __unconditional means__ or __random intercepts__ model, i.e., we do not include any predictor variables at either level of the data (pass attempts or QBs). 
+
+In order to fit this model, we will use the [`lme4` package](https://cran.r-project.org/web/packages/lme4/index.html). The code chunk below demonstrates how to fit a logistic regression model with __random intercepts__ for QBs using the `glmer()` function. Note that in the `lme4` model syntax, we specify __random effects__ via terms inside parentheses `()`. In this example, we specify that the model will have random intercepts (or varying intercepts) for QBs via `(1 | passer_name_id)` where you can think of the `1` denoting an intercept with the `| passer_name_id` indicating the intercept will vary by `passer_name_id`. We can display the `summary()` output for this generalized linear multilevel model (GLMM) in the usual manner:
+
+```{r}
+#| warning: false
+#| message: false
+library(lme4)
+init_glmm <- glmer(complete_pass ~ (1 | passer_name_id),
+                   family = binomial, data = nfl_passing_data)
+
+summary(init_glmm)
+```
+
+For this model, we do not see the reported effects for the individual QBs (we will return to that later). Instead, we observe the reported variance for the QB distribution (under `Random effects` as `Variance`) as well as the usual intercept (under `Fixed effects`).
+
+## Intraclass correlation coefficient
+
+While the above displays the output for a _logistic regression_ model with random intercepts, for comparison we will explore the output for modeling a continuous response: expected points added (EPA). If we decide to assume that the Level One variance of EPA follows a Normal distribution, then we can model the data using the `lmer()` function instead of `glmer()` with the same syntax for the random intercepts. _Note: the code chunk below sets `REML = FALSE` to ensure we are using the maximum likelihood estimate, which is something we'll return to later._
+
+```{r}
+epa_lmm <- lmer(epa ~ (1 | passer_name_id), 
+                data = nfl_passing_data, REML = FALSE)
+
+summary(epa_lmm)
+```
+
+Unlike the logistic regression model, we now have two variance estimates in the `Random effects` section: one for the QBs and another the `Residual` which corresponds to the *within-QB variability*. We can extract the relevant variances from this model using the `VarCorr()` function in `lme4`:
+
+```{r}
+# The following is a way to print out both the Variance and Std Dev:
+print(VarCorr(epa_lmm), comp = c("Variance", "Std.Dev."), digits = 4)
+```
+
+From this, we can also compute the __intraclass correlation coefficient (ICC)__ for the random intercepts. You could do this manually by just grabbing the variance values from the summary:
+
+```{r}
+0.01431 / (0.01431 + 2.37037)
+```
+
+Or by converting the `VarCorr()` output to a tibble, which gives us the variances and then provides an easy way to compute the ICC values for each random effect (note the residual ICC row is NOT an ICC value):
+
+```{r}
+VarCorr(epa_lmm) |> 
+  as_tibble() |> 
+  mutate(icc = vcov / sum(vcov)) |> 
+  dplyr::select(grp, icc)
+```
+
+Returning back to model for compleition probability: in order to compute the ICC for the logistic regression model we need to manually compute the ICC based on the variance for errors that following a [Logistic distribution](https://en.wikipedia.org/wiki/Logistic_distribution) with a mean of 0 and variance of $\pi^2 / 3$. This comes from a [__latent response model__](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3426610/) representation of the logistic regression model, which allows us to replace the residual variance from the `lmer()` model with $\pi^2 / 3$ for the logistic regression model fit with `glmer()`.
+
+You can compute the ICC value for the pass completion probability model manually, based on the summary output:
+
+```{r}
+0.02014 / (0.02014 + (pi^2 / 3))
+```
+
+Or by grabbing the variance term from the model in a way that is similar to the code from before for the `lmer()` model that relies on using `VarCorr()`:
+
+```{r}
+VarCorr(init_glmm) |>
+  as_tibble() |>
+  # Note the use of sum(vcov) to work later with multiple levels
+  mutate(icc = vcov / (sum(vcov) + (pi^2 / 3))) |>
+  dplyr::select(grp, icc)
+```
+
+## Next step: including covariates and varying slopes
+
+The next model to consider is one that accounts for Level One covariates. For instance, we can account for the air yards of the pass attempt in our model as a __fixed effect__:
+
+```{r}
+air_glmm <- glmer(complete_pass ~ air_yards + (1 | passer_name_id),
+                  family = binomial, data = nfl_passing_data)
+
+summary(air_glmm)
+```
+
+Compared to before, we now observe the `Fixed effects` estimates for the `air_yards` variable, as well as a slight change in the variance estimate for the QB random intercepts. For comparison purposes, the following code chunk displays the model summary output for the `glm()` without random intercepts:
+
+```{r}
+air_glm <- glm(complete_pass ~ air_yards,
+               family = binomial, data = nfl_passing_data)
+
+summary(air_glm)
+```
+
+Relative to the output from the `glmer()` model, we can see that the fixed effect coefficient estimates change slightly with larger standard errors in the `glmer()` model.
+
+Instead of modeling completion probability with varying intercepts, we can instead use __varying slopes__ (aka __random slopes__) which allows the coefficient for a variable of interest to vary with each QB. This is similar to thinking about the interaction between categorical variables and quantitative variables, except with the assumption that the effect for the levels of a categorical variable follow some distribution. 
+
+In terms of the `lme4` syntax, in order to specify __random slopes__ WITHOUT including random intercepts, you need to use `(0 + air_yards | passer_name_id)` in the formula - which you can think of saying: vary the slopes for `air_yards` by `passer_name_id` but do not touch the intercept term (hence the 0 instead of 1). 
+
+The following code chunk fits and reports the summary for the random slopes model:
+
+```{r}
+air_slopes_glmm <- glmer(complete_pass ~ 1 + air_yards + (0 + air_yards | passer_name_id),
+                         family = binomial, data = nfl_passing_data)
+
+summary(air_slopes_glmm)
+```
+
+Unlike the random intercepts model from before, we can no longer report the ICC value with random slopes. However, we can still view the random slopes variance, as well as make comparisons across model fits using the AIC or BIC that are reported near the top of the summary. Relative to the other models, this random slopes model appear to display the best AIC and BIC values (lower is better).
+
+## Both: Varying intercepts and varying slopes
+
+Now that we built up fitting of varying intercepts and varying slopes, we can return to the model in our previous demo which consists of both. In terms of the `lme4` syntax, we can specify a model with both varying intercepts and slopes with `(air_yards | passer_name_id)`:
+
+```{r}
+air_both_glmm <- glmer(complete_pass ~ air_yards + (air_yards | passer_name_id),
+                       family = binomial, data = nfl_passing_data)
+
+summary(air_both_glmm)
+```
+
+Compared to the previous model, we see that bot the AIC and BIC are worse (i.e., higher values). There are supposed to be two variances reported for both the random intercepts and slopes under the `Random effects` section, along with the estimate for the correlation between the random effects under `Corr`. However, the variance for the random intercepts is reported to be 0 and the resulting correlation between the intercepts and slopes is missing!
+
+**We could make the assumption that the correlation between the random effects is zero** and explicitly force that in our model (meaning we would not have to estimate one parameter from the last model). In terms of the code syntax, this requires inputting the random effects separately for the intercepts `(1 | passer_name_id)` and slopes `(0 + air_yards | passer_name_id)`. The code chunk below fits this model with uncorrelated random intercept and slopes:
+
+```{r}
+air_both_indep_glmm <- 
+  glmer(complete_pass ~ 1 + (1 | passer_name_id) + air_yards + (0 + air_yards | passer_name_id),
+        family = binomial, data = nfl_passing_data)
+
+summary(air_both_indep_glmm)
+```
+
+From the output, this results in a noticeably different model! The variance for the random intercepts is no longer estimated to be 0 and is now even estimated to be larger than the variance for the random slopes. Notice that the correlation between the random effects is no longer reported, since it is assumed to be 0. We can also see that this model has the best AIC and BIC values among the considered models in this demo. This result should be an indication to you that we often need to be careful with the default implementation of software since they often come with model assumptions that may or may not be ideal.
+
+
+## Recap:
+
++ You have seen how to fit multilevel models with varying intercepts and varying slopes, either separately or at the same time. You just need to pay attention to the syntax regarding the random effects in parentheses.
+
++ The [`sjstats`](https://cran.r-hub.io/web/packages/sjstats/vignettes/mixedmodels-statistics.html) package is a resource with a variety of other built-in evaluation metrics for `lme4` models.  
+
+
