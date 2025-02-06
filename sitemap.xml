@@ -2,46 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/index.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.733Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/lectures.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.733Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04b-cpoe.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/02-calibration-cv.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/00-into-tidyverse.html</loc>
-    <lastmod>2025-02-04T02:36:53.996Z</lastmod>
-  </url>
-  <url>
-    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/03-multinom-logit.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/06-varying-ints-slopes.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.733Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/03-multinom-logit.html</loc>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/07-nested-crossed-effects.html</loc>
+    <lastmod>2025-02-06T03:41:43.733Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/01-logit-expected-goals.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/05-intro-multilevel-models.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.733Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04a-epa.html</loc>
-    <lastmod>2025-02-04T02:36:53.997Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos.html</loc>
-    <lastmod>2025-02-04T02:36:53.996Z</lastmod>
+    <lastmod>2025-02-06T03:41:43.732Z</lastmod>
   </url>
 </urlset>
