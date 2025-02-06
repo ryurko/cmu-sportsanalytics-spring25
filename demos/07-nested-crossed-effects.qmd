@@ -1,0 +1,142 @@
+---
+title: "Lecture 8: Nested and crossed random effects"
+format: html
+---
+
+## Introduction
+
+The purpose of this demo is to walk through fitting and interpreting the output of multilevel models with more than two levels, i.e., more than one group treated as random effects. Building off the previous demos and lecture content, we'll do this in the context of modeling pass completion probability. The additional levels we'll consider are the __receivers__ and __opposing defenses__. As a reminder, you can find the dataset and code to create the data (`init_nfl_passing_data.R`) on Canvas in the demos/week3 folder.  
+
+The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_passing_data <- read_csv(here::here("data/nfl_passing_data.csv"))
+nfl_passing_data
+```
+
+## Nested levels demonstrated by receivers
+
+In the previous demo and lecture material, we only considered modeling the passer/QB group as a random effect. But we know that the structure of passing plays includes receivers and opposing defenses which we should also account for. 
+
+To start, we'll first consider including receivers in the model. If players did not change teams at all during the period of time we collected data, then receivers would only attempt to catch passes from a single passer/QB. This would mean that the receivers would be a __nested level__ within the passer/QB level, i.e.,  we observe the outcomes of pass attempts by QBs to a group of receivers such that their receivers do not receive any passes from other QBs. This type of data structure would correspond to a __nested three-level model__.
+
+To make this more concrete, we'll consider a subset of our data corresponding to pass attempts that were only during the 2024 season and were attempted by the top 32 QBs in terms of the number of pass attempts that that only played for a single team. Additionally, we'll only consider receivers that caught for these QBs that only caught passes for one QB. This results in a smaller dataset that preserves the __nested__ structure we just described. The code chunk below creates this dataset:
+
+```{r}
+# First get the 2024 season only:
+nfl_passing_2024 <- nfl_passing_data |>
+  filter(str_detect(game_id, "2024_"))
+
+# Next find the QBs and receivers that only played for one team, 
+qb_list <- nfl_passing_2024 |>
+  group_by(passer_name_id) |>
+  summarize(n_teams = length(unique(posteam)),
+            n_passes = n(),
+            .groups = "drop") |>
+  filter(n_teams == 1) |>
+  slice_max(n_passes, n = 32) |>
+  pull(passer_name_id)
+
+# Grab the sample of passes by these QBs:
+nested_passing_data <- nfl_passing_2024 |>
+  filter(passer_name_id %in% qb_list)
+
+# Now find the receivers that only caught passes for just one QB in these plays:
+receiver_list <- nested_passing_data |>
+  # Drop the QBs from this:
+  filter(!(receiver_name_id %in% qb_list)) |>
+  group_by(receiver_name_id) |>
+  summarize(n_qbs = length(unique(passer_name_id)),
+            .groups = "drop") |>
+  filter(n_qbs == 1) |>
+  pull(receiver_name_id)
+
+# And now filter the data to only these receivers:
+nested_passing_data <- nested_passing_data |>
+  filter(receiver_name_id %in% receiver_list)
+# Note this results in 31 QBs since it drops Cooper Rush for the Cowboys since
+# the Cowboys started multiple QBs this season...
+```
+
+Using this dataset, we'll start with models that only contain varying intercepts. We can fit the __nested__ model in one of two ways:
+
+### 1.) Explicit nested effects
+
+The `lme4` syntax for modeling the three level effects, with receivers nested within the passers, uses two terms: (1) the highest level intercepts `(1 | passer_name_id)`, and (2) the nested level intercepts `(1 | passer_name_id:receiver_name_id)`. The code below fits this model and displays the relevant output:
+
+```{r}
+library(lme4)
+rec_nested_glmm <- glmer(complete_pass ~ (1 | passer_name_id) + (1 | passer_name_id:receiver_name_id),
+                         family = binomial, data = nested_passing_data)
+
+summary(rec_nested_glmm)
+```
+
+
+### 2.) Implicit nested effects
+
+An alternative way to fit the same model, __if and only if one level is completely nested within another__, is by simply specifying the two varying intercepts separately:
+
+```{r}
+rec_nested_glmm2 <- glmer(complete_pass ~ (1 | passer_name_id) + (1 | receiver_name_id),
+                         family = binomial, data = nested_passing_data)
+
+summary(rec_nested_glmm2)
+```
+
+If you look closely at the summary output, this is the same model as before (same AIC, BIC, fixed effect estimates) including the random effects. 
+
+For both of these models, the `passer_name_id` variance is estimated to be 0, with the indication that any variance in completion probability is at the receiver level. Part of the concern of fitting this model is the fact we've approached a __boundary constraint__. Consider that the variance for the `passer_name_id` random effect is 0. This is at the __boundary__ of possible values for the variance term since variance can only be $\geq 0$. Because this model is fit with maximum likelihood estimation via some optimization technique, this means that the best model fit is likely an impossible value for the `passer_name_id` variance (i.e., something negative). But we cannot have a negative variance value so the boundary at 0 is used instead. **The presence of a boundary constraint should be concerning to you** - it likely means that we need to re-parameterize our model (i.e., pick a different specification for it). If we did not compare about the parameters that hit the boundary, then we do not need to worry about it. In this context, I should be concerned that the variance for passers is 0.
+
+Despite these issues, we can also compute the ICC for the different random effects in this model as before:
+
+```{r}
+VarCorr(rec_nested_glmm2) |>
+  as_tibble() |>
+  # Note the use of sum(vcov) to work later with multiple levels
+  mutate(icc = vcov / (sum(vcov) + (pi^2 / 3))) |>
+  dplyr::select(grp, icc)
+```
+
+We can also update this model to consider random slopes at both levels for `air_yards` (note this will take a bit of time to run):
+
+```{r}
+rec_air_nested_glmm <- glmer(complete_pass ~ air_yards + (air_yards | passer_name_id) + 
+                               (air_yards | receiver_name_id),
+                             family = binomial, data = nested_passing_data)
+
+summary(rec_air_nested_glmm)
+```
+
+From this summary, we see a few changes to the output. There are the estimates for the different parameters we've now accounted for in this more complex model such as the variances for the intercepts and `air_yards` slopes. You can see that the variance for the passer-level information is no longer 0 - meaning that there is some QB level variation explaining completion probability. However, we once again run into a boundary constraint problem! Look at the correlation for the `passer_name_id` random effects reported under the `Corr` column: it's -1. As correlation coefficients are bounded between -1 and 1, this is again another boundary estimate likely indicating the model parameterization is problematic.
+
+## Crossed effects
+
+In the examples above, we assumed that the receivers only caught passes from one QB, and that QBs did not overlap in terms of the receivers they threw to. However, this is not true - players change teams via trades and signings such that we can observe crossing of the different levels. This is especially true over the course of multiple seasons. Furthermore, if we want to account for the opposing defense on a passing play - we know for a fact that there is no longer nesting structure since any opposing defense is not associated with a single QB/receiver group combination. Teams play several different teams throughout the course of the season. This leads to a structure that is no longer nested, but called __crossed effects__.
+
+Using the original `nfl_passing_data` corresponding to all passing plays during the 2023 and 2024 seasons, we fit a multilevel model that accounts for air yards with varying intercepts for the QB/passer, receiver, and opposing defense using the same syntax for a single varying intercept term:
+
+```{r}
+full_pass_glmm <- glmer(complete_pass ~ air_yards + (1 | passer_name_id) +
+                          (1 | receiver_name_id) + (1 | defteam),
+                        family = binomial, data = nfl_passing_data)
+
+summary(full_pass_glmm)
+```
+
+Using this type of model, we can compare the different estimates of the variances to provide us with an understanding of which groups (passer vs receiver vs defense) explain more variation in the outcome. The code chunk below quickly computes the ICC value for each group term:
+
+
+```{r}
+VarCorr(full_pass_glmm) |>
+  as_tibble() |>
+  # Note the use of sum(vcov) to work later with multiple levels
+  mutate(icc = vcov / (sum(vcov) + (pi^2 / 3))) |>
+  dplyr::select(grp, icc)
+```
+
+According to this model, receivers display more variance followed (by a large gap) by passers and then defense. This is not necessarily the most optimal model, but it provides a reasonable starting point for understanding the receiver-level importance in modeling completion probability. Next steps from this would be to potentially explore random slopes between the different groups and air yards, but more importantly we could account for other information (such as QB hit or the different contextual variables in the play-by-play data). I will leave that for you to explore on your own...
+

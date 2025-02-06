@@ -12,4 +12,5 @@ title: "Demos"
 | 4b      | Jan 28  | Completion Percentage Over Expectation | [HTML](demos/04b-cpoe.qmd)  |
 | 5      | Jan 30  | Intro to multilevel modeling | [HTML](demos/05-intro-multilevel-models.qmd)  |
 | 6      | Feb 4  | Varying intercepts and slopes | [HTML](demos/06-varying-ints-slopes.qmd)  |
+| 7      | Feb 6  | Nested and crossed random effects | [HTML](demos/07-nested-crossed-effects.qmd)  |
 
