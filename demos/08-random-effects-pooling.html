@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lecture 9: Random effects and pooling – Special Topics: Sports Analytics 36-460/660</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-a6a01229d4f8bdf1dc707ca4bfce0e81.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Special Topics: Sports Analytics 36-460/660
+      </li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Special Topics: Sports Analytics 36-460/660</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/ryurko/cmu-sportsanalytics-spring25" title="GitHub" class="quarto-navigation-tool px-1" aria-label="GitHub"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lectures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lectures</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../demos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Demos</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#accessing-random-effect-estimates" id="toc-accessing-random-effect-estimates" class="nav-link" data-scroll-target="#accessing-random-effect-estimates">Accessing random effect estimates</a></li>
+  <li><a href="#demonstration-of-pooling-for-intercepts" id="toc-demonstration-of-pooling-for-intercepts" class="nav-link" data-scroll-target="#demonstration-of-pooling-for-intercepts">Demonstration of pooling for intercepts</a></li>
+  <li><a href="#comparison-of-regression-lines" id="toc-comparison-of-regression-lines" class="nav-link" data-scroll-target="#comparison-of-regression-lines">Comparison of regression lines</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 9: Random effects and pooling</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The purpose of this demo is to demonstrate how to access random effect estimates from multilevel models with insight about the behavior of pooling. Building off the previous demos and lecture content, we’ll look at this in the context of modeling the dataset of NFL pass attempts. As a reminder, you can find the dataset and code to create the data (<code>init_nfl_passing_data.R</code>) on Canvas in the demos/week3 folder.</p>
+<p>The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nfl_passing_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data/nfl_passing_data.csv"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>nfl_passing_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 35,987 × 17
+   game_id         play_id drive posteam defteam posteam_type passer_name_id    
+   &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;        &lt;chr&gt;             
+ 1 2023_01_ARI_WAS      77     1 WAS     ARI     home         S.Howell_00-00370…
+ 2 2023_01_ARI_WAS     124     1 WAS     ARI     home         S.Howell_00-00370…
+ 3 2023_01_ARI_WAS     147     1 WAS     ARI     home         S.Howell_00-00370…
+ 4 2023_01_ARI_WAS     172     1 WAS     ARI     home         S.Howell_00-00370…
+ 5 2023_01_ARI_WAS     197     1 WAS     ARI     home         S.Howell_00-00370…
+ 6 2023_01_ARI_WAS     220     1 WAS     ARI     home         S.Howell_00-00370…
+ 7 2023_01_ARI_WAS     332     2 ARI     WAS     away         J.Dobbs_00-0033949
+ 8 2023_01_ARI_WAS     357     2 ARI     WAS     away         J.Dobbs_00-0033949
+ 9 2023_01_ARI_WAS     380     2 ARI     WAS     away         J.Dobbs_00-0033949
+10 2023_01_ARI_WAS     526     3 WAS     ARI     home         S.Howell_00-00370…
+# ℹ 35,977 more rows
+# ℹ 10 more variables: receiver_name_id &lt;chr&gt;, complete_pass &lt;dbl&gt;,
+#   pass_location &lt;chr&gt;, air_yards &lt;dbl&gt;, qb_hit &lt;dbl&gt;, epa &lt;dbl&gt;,
+#   yardline_100 &lt;dbl&gt;, down &lt;dbl&gt;, ydstogo &lt;dbl&gt;, is_home &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="accessing-random-effect-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="accessing-random-effect-estimates">Accessing random effect estimates</h2>
+<p>We’ll first demonstrate how to grab random effect estimates in the context of a varying intercepts model for modeling EPA, using the same model from the <code>varying_ints_slopes.qmd</code> demo. The following code chunk fits this model (with the default setting of <code>REML = TRUE</code> this time):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'lme4' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Matrix</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'Matrix' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'Matrix'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:tidyr':
+
+    expand, pack, unpack</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>epa_lmm <span class="ot">&lt;-</span> <span class="fu">lmer</span>(epa <span class="sc">~</span> (<span class="dv">1</span> <span class="sc">|</span> passer_name_id), </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> nfl_passing_data, <span class="at">REML =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(epa_lmm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: epa ~ (1 | passer_name_id)
+   Data: nfl_passing_data
+
+REML criterion at convergence: 133283
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-8.3024 -0.5206 -0.1420  0.5539  5.6367 
+
+Random effects:
+ Groups         Name        Variance Std.Dev.
+ passer_name_id (Intercept) 0.01467  0.1211  
+ Residual                   2.37035  1.5396  
+Number of obs: 35987, groups:  passer_name_id, 141
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  0.09218    0.01703   5.412</code></pre>
+</div>
+</div>
+<p>There are a couple of ways of accessing the random effects estimates from the model. The first way is to use the <code>lme4</code> package function <code>ranef()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ranef</span>(epa_lmm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$passer_name_id
+                                (Intercept)
+A.Cole_00-0035190               0.026086976
+A.Dalton_00-0027973            -0.058671095
+A.Lazard_00-0034521            -0.006783395
+A.McCarron_00-0031288          -0.021830094
+A.Mitchell_00-0039890           0.014474047
+A.O'Connell_00-0038579         -0.008539064
+A.Richardson_00-0039164        -0.077646393
+A.Rodgers_00-0023459            0.014757403
+A.St. Brown_00-0036963          0.010036507
+B.Allen_00-0032434             -0.068893212
+B.Anger_00-0029692             -0.035888738
+B.Gabbert_00-0027948           -0.087429227
+B.Hoyer_00-0026625             -0.055121079
+B.Mann_00-0036313               0.025320730
+B.Mayfield_00-0034855           0.135634137
+B.Nix_00-0039732                0.009670612
+B.Purdy_00-0037834              0.221228938
+B.Rypien_00-0034955            -0.077704620
+B.Young_00-0039150             -0.088111688
+B.Zappe_00-0038108             -0.188632108
+C.Beathard_00-0033936           0.007028658
+C.Godwin_00-0033921            -0.004940695
+C.Keenum_00-0028986            -0.074714817
+C.Kirk_00-0034775              -0.011864092
+C.Rush_00-0033662              -0.067065764
+C.Stroud_00-0039163             0.097714305
+C.Sutton_00-0034348             0.044660054
+C.Tune_00-0038582              -0.129369546
+C.Wentz_00-0032950              0.040244310
+C.Williams_00-0039918           0.017964672
+C.Wilson_00-0034418             0.011947935
+Co.Heyward_00-0037304          -0.002120499
+D.Brown_00-0036626             -0.005624211
+D.Carr_00-0031280               0.064074147
+D.Henry_00-0032764              0.025795078
+D.Hopkins_00-0030564           -0.003137752
+D.Jones_00-0035710             -0.066273193
+D.Lock_00-0035704              -0.066063437
+D.London_00-0037238             0.010773892
+D.Maye_00-0039851               0.019563465
+D.Mills_00-0036898             -0.076382628
+D.Montgomery_00-0035685         0.008775943
+D.Mooney_00-0036309            -0.003173442
+D.Moore_00-0034827             -0.003317685
+D.Prescott_00-0033077           0.112030293
+D.Ridder_00-0038122            -0.038031429
+D.Samuel_00-0035719            -0.003292566
+D.Singletary_00-0035250         0.010763326
+D.Thompson-Robinson_00-0038583 -0.267392910
+D.Watson_00-0033537            -0.066060401
+D.Wicks_00-0038393              0.004902220
+E.Stick_00-0035282             -0.002559001
+G.Minshew_00-0035289            0.001078419
+G.Smith_00-0030565              0.063016302
+G.Wilson_00-0037740            -0.003232878
+H.Hooker_00-0038550             0.005340321
+J.Allen_00-0034857              0.136924504
+J.Brissett_00-0033119          -0.024119403
+J.Browning_00-0035100           0.085301190
+J.Burrow_00-0036442             0.130931167
+J.Chase_00-0036900             -0.013499650
+J.Coker_00-0039491              0.007494027
+J.Daniels_00-0039910            0.115063119
+J.Dobbs_00-0033949             -0.065886373
+J.Driskel_00-0032436           -0.040781183
+J.Fields_00-0036945             0.026888566
+J.Flacco_00-0026158             0.003335069
+J.Fox_00-0035156                0.021803519
+J.Garoppolo_00-0031345         -0.004504616
+J.Goff_00-0033106               0.180202174
+J.Haener_00-0038998            -0.043659241
+J.Hall_00-0038598              -0.018250736
+J.Hekker_00-0028872            -0.048175478
+J.Herbert_00-0036355            0.088486825
+J.Hurts_00-0036389              0.115486127
+J.Jefferson_00-0036322          0.015117480
+J.Johnson_00-0026300           -0.005510041
+J.Love_00-0036264               0.090283070
+J.McKinnon_00-0031376           0.006231036
+J.Meyers_00-0034960             0.003592254
+J.Milton_00-0039398             0.047835434
+J.Mixon_00-0033897             -0.005032779
+J.Reeves-Maybin_00-0033557      0.024912839
+J.Scott_00-0034162             -0.017212752
+J.Smith_00-0033858             -0.005867248
+J.Smith-Njigba_00-0038543       0.013231429
+J.Stidham_00-0035264            0.043488303
+J.Winston_00-0031503           -0.060927839
+K.Allen_00-0030279             -0.016238386
+K.Allen_00-0034577              0.008243373
+K.Bourne_00-0033307            -0.008684812
+K.Cousins_00-0029604            0.063098242
+K.Gainwell_00-0036919           0.007025370
+K.Murray_00-0035228             0.033295115
+K.Pickett_00-0038102           -0.055517203
+K.Toney_00-0036913             -0.003310436
+K.Trask_00-0036928             -0.010799878
+L.Cooke_00-0034437              0.015204166
+L.Jackson_00-0034796            0.220721604
+L.Woodside_00-0034438          -0.053455241
+M.Jones_00-0036972             -0.087874472
+M.Killebrew_00-0032399         -0.017035100
+M.Mariota_00-0032268            0.087476721
+M.Nabers_00-0039337            -0.006493952
+M.Penix_00-0039917              0.039436189
+M.Rudolph_00-0034771            0.010298562
+M.Stafford_00-0026498           0.072236664
+M.Trubisky_00-0033869          -0.029010535
+M.White_00-0034401             -0.089366717
+M.Willis_00-0038128             0.133856393
+N.Mullens_00-0033319            0.073570390
+P.Mahomes_00-0033873            0.065559552
+P.Walker_00-0033275            -0.085391908
+R.Dixon_00-0032943             -0.012243981
+R.Pearsall_00-0039916          -0.003832464
+R.Tannehill_00-0029701          0.011709751
+R.Wilson_00-0029263             0.031395476
+S.Clifford_00-0038391           0.012616529
+S.Darnold_00-0034869            0.105987934
+S.Diggs_00-0031588              0.016425221
+S.Howell_00-0037077            -0.103176367
+S.Rattler_00-0039376           -0.144835737
+S.Thompson_00-0037327          -0.034110806
+T.Atwell_00-0036849            -0.003710240
+T.Bagent_00-0038416            -0.084925944
+T.Boyd_00-0033009              -0.043678860
+T.Boyle_00-0034177             -0.155153890
+T.DeVito_00-0038476            -0.047507102
+T.Heinicke_00-0031800          -0.023228317
+T.Hill_00-0033357              -0.007443771
+T.Huntley_00-0035993           -0.010809721
+T.Lance_00-0037012             -0.058684277
+T.Lawrence_00-0036971           0.009027494
+T.McKee_00-0038400              0.071034205
+T.Morstead_00-0027114           0.015859297
+T.Siemian_00-0032156           -0.172370590
+T.Tagovailoa_00-0036212         0.177228789
+T.Taylor_00-0028118             0.057330276
+T.Townsend_00-0035889           0.014437035
+W.Levis_00-0039152             -0.030351674
+Z.Wilson_00-0037013            -0.090027787
+
+with conditional variances for "passer_name_id" </code></pre>
+</div>
+</div>
+<p>You can see this returns a list of the individual effects for each QB. Note, that these values alone are NOT the mean intercept for each QB in the dataset. Instead, you must add the fixed effect intercept to these values to get the QB-specific intercepts.</p>
+<p>In order to make a process like that easier, it can be helpful to use the <a href="https://github.com/bbolker/broom.mixed"><code>broom.mixed</code> package</a> which has convenient helper functions for tidying the <code>lme4</code> model output. We can extract the random effects from the model using this package with <code>tidy(lmer_model, effects = "ran_vals")</code>, and store the values in a table:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom.mixed)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'broom.mixed' was built under R version 4.2.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>qb_ranef <span class="ot">&lt;-</span> <span class="fu">tidy</span>(epa_lmm, <span class="at">effects =</span> <span class="st">"ran_vals"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># View the dataset</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>qb_ranef</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 6
+   effect   group          level                   term       estimate std.error
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+ 1 ran_vals passer_name_id A.Cole_00-0035190       (Intercep…  0.0261     0.121 
+ 2 ran_vals passer_name_id A.Dalton_00-0027973     (Intercep… -0.0587     0.0790
+ 3 ran_vals passer_name_id A.Lazard_00-0034521     (Intercep… -0.00678    0.121 
+ 4 ran_vals passer_name_id A.McCarron_00-0031288   (Intercep… -0.0218     0.119 
+ 5 ran_vals passer_name_id A.Mitchell_00-0039890   (Intercep…  0.0145     0.121 
+ 6 ran_vals passer_name_id A.O'Connell_00-0038579  (Intercep… -0.00854    0.0564
+ 7 ran_vals passer_name_id A.Richardson_00-0039164 (Intercep… -0.0776     0.0683
+ 8 ran_vals passer_name_id A.Rodgers_00-0023459    (Intercep…  0.0148     0.0563
+ 9 ran_vals passer_name_id A.St. Brown_00-0036963  (Intercep…  0.0100     0.121 
+10 ran_vals passer_name_id B.Allen_00-0032434      (Intercep… -0.0689     0.111 
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>We can visualize the distribution of the QB random effects to see how they are centered around zero below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> estimate)) <span class="sc">+</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"QB random effect"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can add a column to this table with the intercepts for each QB by simply adding the fixed effect intercept (grabbed with <code>fixef(epa_lmm)</code>) to the <code>estimate</code> column in the dataset above:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>qb_ranef <span class="ot">&lt;-</span> qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q_intercept =</span> estimate <span class="sc">+</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(epa_lmm)))</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>qb_ranef</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 7
+   effect   group          level            term  estimate std.error q_intercept
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;            &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+ 1 ran_vals passer_name_id A.Cole_00-00351… (Int…  0.0261     0.121       0.118 
+ 2 ran_vals passer_name_id A.Dalton_00-002… (Int… -0.0587     0.0790      0.0335
+ 3 ran_vals passer_name_id A.Lazard_00-003… (Int… -0.00678    0.121       0.0854
+ 4 ran_vals passer_name_id A.McCarron_00-0… (Int… -0.0218     0.119       0.0704
+ 5 ran_vals passer_name_id A.Mitchell_00-0… (Int…  0.0145     0.121       0.107 
+ 6 ran_vals passer_name_id A.O'Connell_00-… (Int… -0.00854    0.0564      0.0836
+ 7 ran_vals passer_name_id A.Richardson_00… (Int… -0.0776     0.0683      0.0145
+ 8 ran_vals passer_name_id A.Rodgers_00-00… (Int…  0.0148     0.0563      0.107 
+ 9 ran_vals passer_name_id A.St. Brown_00-… (Int…  0.0100     0.121       0.102 
+10 ran_vals passer_name_id B.Allen_00-0032… (Int… -0.0689     0.111       0.0233
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>The following figure now displays the QB intercepts, which is effectively the same figure as before but now the center is shifted based on the fixed effect intercept:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> q_intercept)) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"QB intercept estimate"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="demonstration-of-pooling-for-intercepts" class="level2">
+<h2 class="anchored" data-anchor-id="demonstration-of-pooling-for-intercepts">Demonstration of pooling for intercepts</h2>
+<p>To demonstrate the role of <strong>pooling</strong>, we can compare the QB intercepts from the multilevel model above versus the traditional regression approach by fitting separate intercepts for each QB. For instance, the following code chunk fits an intercept-only regression model <strong>without</strong> random effects (note the use of -1 to remove the global intercept here):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>naive_epa_lm <span class="ot">&lt;-</span> <span class="fu">lm</span>(epa <span class="sc">~</span> <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> passer_name_id, <span class="at">data =</span> nfl_passing_data)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(naive_epa_lm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = epa ~ -1 + passer_name_id, data = nfl_passing_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-12.7826  -0.8049  -0.2045   0.8486   8.6575 
+
+Coefficients:
+                                              Estimate Std. Error t value
+passer_name_idA.Cole_00-0035190               4.333918   1.537894   2.818
+passer_name_idA.Dalton_00-0027973            -0.009980   0.104159  -0.096
+passer_name_idA.Lazard_00-0034521            -1.010796   1.537894  -0.657
+passer_name_idA.McCarron_00-0031288          -0.635195   0.687767  -0.924
+passer_name_idA.Mitchell_00-0039890           2.445659   1.537894   1.590
+passer_name_idA.O'Connell_00-0038579          0.081281   0.063639   1.277
+passer_name_idA.Richardson_00-0039164        -0.021729   0.082678  -0.263
+passer_name_idA.Rodgers_00-0023459            0.111017   0.063584   1.746
+passer_name_idA.St. Brown_00-0036963          1.724116   1.537894   1.121
+passer_name_idB.Allen_00-0032434             -0.347815   0.280780  -1.239
+passer_name_idB.Anger_00-0029692             -2.843511   1.087456  -2.615
+passer_name_idB.Gabbert_00-0027948           -0.398919   0.259952  -1.535
+passer_name_idB.Hoyer_00-0026625             -0.175023   0.237302  -0.738
+passer_name_idB.Mann_00-0036313               4.209327   1.537894   2.737
+passer_name_idB.Mayfield_00-0034855           0.247128   0.045649   5.414
+passer_name_idB.Nix_00-0039732                0.104614   0.064643   1.618
+passer_name_idB.Purdy_00-0037834              0.353536   0.051521   6.862
+passer_name_idB.Rypien_00-0034955            -0.315971   0.249479  -1.267
+passer_name_idB.Young_00-0039150             -0.011576   0.050981  -0.227
+passer_name_idB.Zappe_00-0038108             -0.222412   0.098860  -2.250
+passer_name_idC.Beathard_00-0033936           0.120642   0.211246   0.571
+passer_name_idC.Godwin_00-0033921            -0.711173   1.537894  -0.462
+passer_name_idC.Keenum_00-0028986            -0.210342   0.211246  -0.996
+passer_name_idC.Kirk_00-0034775              -0.878299   1.087456  -0.808
+passer_name_idC.Rush_00-0033662              -0.007626   0.084530  -0.090
+passer_name_idC.Stroud_00-0039163             0.205317   0.048059   4.272
+passer_name_idC.Sutton_00-0034348             3.745369   1.087456   3.444
+passer_name_idC.Tune_00-0038582              -0.946147   0.320673  -2.951
+passer_name_idC.Wentz_00-0032950              0.283670   0.234527   1.210
+passer_name_idC.Williams_00-0039918           0.115350   0.065104   1.772
+passer_name_idC.Wilson_00-0034418             2.034914   1.537894   1.323
+passer_name_idCo.Heyward_00-0037304          -0.252610   1.537894  -0.164
+passer_name_idD.Brown_00-0036626             -0.367877   1.087456  -0.338
+passer_name_idD.Carr_00-0031280               0.168777   0.053478   3.156
+passer_name_idD.Henry_00-0032764              1.507470   0.887904   1.698
+passer_name_idD.Hopkins_00-0030564           -0.418015   1.537894  -0.272
+passer_name_idD.Jones_00-0035710              0.004361   0.068984   0.063
+passer_name_idD.Lock_00-0035704              -0.015583   0.096118  -0.162
+passer_name_idD.London_00-0037238             1.844015   1.537894   1.199
+passer_name_idD.Maye_00-0039851               0.121127   0.083774   1.446
+passer_name_idD.Mills_00-0036898             -0.148779   0.177581  -0.838
+passer_name_idD.Montgomery_00-0035685         1.519149   1.537894   0.988
+passer_name_idD.Mooney_00-0036309            -0.423818   1.537894  -0.276
+passer_name_idD.Moore_00-0034827             -0.447272   1.537894  -0.291
+passer_name_idD.Prescott_00-0033077           0.224927   0.052020   4.324
+passer_name_idD.Ridder_00-0038122             0.041075   0.070938   0.579
+passer_name_idD.Samuel_00-0035719            -0.443188   1.537894  -0.288
+passer_name_idD.Singletary_00-0035250         1.842297   1.537894   1.198
+passer_name_idD.Thompson-Robinson_00-0038583 -0.364731   0.101850  -3.581
+passer_name_idD.Watson_00-0033537            -0.001534   0.078277  -0.020
+passer_name_idD.Wicks_00-0038393              0.889282   1.537894   0.578
+passer_name_idE.Stick_00-0035282              0.087233   0.116924   0.746
+passer_name_idG.Minshew_00-0035289            0.093481   0.054612   1.712
+passer_name_idG.Smith_00-0030565              0.164707   0.046993   3.505
+passer_name_idG.Wilson_00-0037740            -0.433483   1.537894  -0.282
+passer_name_idH.Hooker_00-0038550             0.193411   0.512631   0.377
+passer_name_idJ.Allen_00-0034857              0.250001   0.047258   5.290
+passer_name_idJ.Brissett_00-0033119           0.046764   0.113684   0.411
+passer_name_idJ.Browning_00-0035100           0.234211   0.098656   2.374
+passer_name_idJ.Burrow_00-0036442             0.243980   0.048296   5.052
+passer_name_idJ.Chase_00-0036900             -2.102857   1.537894  -1.367
+passer_name_idJ.Coker_00-0039491              1.310709   1.537894   0.852
+passer_name_idJ.Daniels_00-0039910            0.246146   0.070342   3.499
+passer_name_idJ.Dobbs_00-0033949              0.003300   0.071472   0.046
+passer_name_idJ.Driskel_00-0032436           -0.202069   0.301606  -0.670
+passer_name_idJ.Fields_00-0036945             0.127270   0.066802   1.905
+passer_name_idJ.Flacco_00-0026158             0.096710   0.072336   1.337
+passer_name_idJ.Fox_00-0035156                3.637429   1.537894   2.365
+passer_name_idJ.Garoppolo_00-0031345          0.084195   0.106378   0.791
+passer_name_idJ.Goff_00-0033106               0.297997   0.045609   6.534
+passer_name_idJ.Haener_00-0038998            -0.132382   0.246260  -0.538
+passer_name_idJ.Hall_00-0038598              -0.073534   0.343884  -0.214
+passer_name_idJ.Hekker_00-0028872            -2.551041   0.887904  -2.873
+passer_name_idJ.Herbert_00-0036355            0.195611   0.049713   3.935
+passer_name_idJ.Hurts_00-0036389              0.228451   0.051320   4.451
+passer_name_idJ.Jefferson_00-0036322          1.328790   1.087456   1.222
+passer_name_idJ.Johnson_00-0026300           -0.210135   0.887904  -0.237
+passer_name_idJ.Love_00-0036264               0.197026   0.048584   4.055
+passer_name_idJ.McKinnon_00-0031376           1.105347   1.537894   0.719
+passer_name_idJ.Meyers_00-0034960             0.289277   0.887904   0.326
+passer_name_idJ.Milton_00-0039398             0.406576   0.285580   1.424
+passer_name_idJ.Mixon_00-0033897             -0.726146   1.537894  -0.472
+passer_name_idJ.Reeves-Maybin_00-0033557      4.143004   1.537894   2.694
+passer_name_idJ.Scott_00-0034162             -2.706606   1.537894  -1.760
+passer_name_idJ.Smith_00-0033858             -0.861830   1.537894  -0.560
+passer_name_idJ.Smith-Njigba_00-0038543       2.243609   1.537894   1.459
+passer_name_idJ.Stidham_00-0035264            0.242151   0.189302   1.279
+passer_name_idJ.Winston_00-0031503            0.002465   0.083160   0.030
+passer_name_idK.Allen_00-0030279             -0.798762   0.887904  -0.900
+passer_name_idK.Allen_00-0034577              1.432553   1.537894   0.932
+passer_name_idK.Bourne_00-0033307            -1.319965   1.537894  -0.858
+passer_name_idK.Cousins_00-0029604            0.168733   0.055859   3.021
+passer_name_idK.Gainwell_00-0036919           1.234506   1.537894   0.803
+passer_name_idK.Murray_00-0035228             0.132145   0.054136   2.441
+passer_name_idK.Pickett_00-0038102            0.012086   0.080497   0.150
+passer_name_idK.Toney_00-0036913             -0.446093   1.537894  -0.290
+passer_name_idK.Trask_00-0036928             -0.791246   1.087456  -0.728
+passer_name_idL.Cooke_00-0034437              2.564376   1.537894   1.667
+passer_name_idL.Jackson_00-0034796            0.351465   0.050566   6.951
+passer_name_idL.Woodside_00-0034438          -2.120861   0.768947  -2.758
+passer_name_idM.Jones_00-0036972             -0.019086   0.062421  -0.306
+passer_name_idM.Killebrew_00-0032399         -2.677720   1.537894  -1.741
+passer_name_idM.Mariota_00-0032268            0.393844   0.189302   2.081
+passer_name_idM.Nabers_00-0039337            -0.963732   1.537894  -0.627
+passer_name_idM.Penix_00-0039917              0.192313   0.150083   1.281
+passer_name_idM.Rudolph_00-0034771            0.108047   0.088939   1.215
+passer_name_idM.Stafford_00-0026498           0.175709   0.047826   3.674
+passer_name_idM.Trubisky_00-0033869           0.027656   0.133857   0.207
+passer_name_idM.White_00-0034401             -0.846692   0.372994  -2.270
+passer_name_idM.Willis_00-0038128             0.592669   0.200217   2.960
+passer_name_idN.Mullens_00-0033319            0.245545   0.125989   1.949
+passer_name_idP.Mahomes_00-0033873            0.166766   0.044884   3.715
+passer_name_idP.Walker_00-0033275            -0.118658   0.146632  -0.809
+passer_name_idR.Dixon_00-0032943             -1.898686   1.537894  -1.235
+passer_name_idR.Pearsall_00-0039916          -0.530975   1.537894  -0.345
+passer_name_idR.Tannehill_00-0029701          0.112192   0.101850   1.102
+passer_name_idR.Wilson_00-0029263             0.130108   0.055172   2.358
+passer_name_idS.Clifford_00-0038391           2.143627   1.537894   1.394
+passer_name_idS.Darnold_00-0034869            0.227250   0.063368   3.586
+passer_name_idS.Diggs_00-0031588              2.762919   1.537894   1.797
+passer_name_idS.Howell_00-0037077            -0.037628   0.061467  -0.612
+passer_name_idS.Rattler_00-0039376           -0.155761   0.102074  -1.526
+passer_name_idS.Thompson_00-0037327          -0.108968   0.267713  -0.407
+passer_name_idT.Atwell_00-0036849            -0.511101   1.537894  -0.332
+passer_name_idT.Bagent_00-0038416            -0.087392   0.127715  -0.684
+passer_name_idT.Boyd_00-0033009              -3.480742   1.087456  -3.201
+passer_name_idT.Boyle_00-0034177             -0.261962   0.137007  -1.912
+passer_name_idT.DeVito_00-0038476             0.010094   0.103217   0.098
+passer_name_idT.Heinicke_00-0031800           0.041949   0.130443   0.322
+passer_name_idT.Hill_00-0033357               0.004545   0.397083   0.011
+passer_name_idT.Huntley_00-0035993            0.071036   0.118300   0.600
+passer_name_idT.Lance_00-0037012             -0.197803   0.240179  -0.824
+passer_name_idT.Lawrence_00-0036971           0.102932   0.052843   1.948
+passer_name_idT.McKee_00-0038400              0.418308   0.229256   1.825
+passer_name_idT.Morstead_00-0027114           2.670900   1.537894   1.737
+passer_name_idT.Siemian_00-0032156           -0.262247   0.124331  -2.109
+passer_name_idT.Tagovailoa_00-0036212         0.299401   0.049765   6.016
+passer_name_idT.Taylor_00-0028118             0.196781   0.109850   1.791
+passer_name_idT.Townsend_00-0035889           2.439641   1.537894   1.586
+passer_name_idW.Levis_00-0039152              0.052977   0.065339   0.811
+passer_name_idZ.Wilson_00-0037013            -0.037704   0.080497  -0.468
+                                             Pr(&gt;|t|)    
+passer_name_idA.Cole_00-0035190              0.004834 ** 
+passer_name_idA.Dalton_00-0027973            0.923665    
+passer_name_idA.Lazard_00-0034521            0.511018    
+passer_name_idA.McCarron_00-0031288          0.355721    
+passer_name_idA.Mitchell_00-0039890          0.111784    
+passer_name_idA.O'Connell_00-0038579         0.201531    
+passer_name_idA.Richardson_00-0039164        0.792697    
+passer_name_idA.Rodgers_00-0023459           0.080823 .  
+passer_name_idA.St. Brown_00-0036963         0.262258    
+passer_name_idB.Allen_00-0032434             0.215448    
+passer_name_idB.Anger_00-0029692             0.008931 ** 
+passer_name_idB.Gabbert_00-0027948           0.124893    
+passer_name_idB.Hoyer_00-0026625             0.460791    
+passer_name_idB.Mann_00-0036313              0.006202 ** 
+passer_name_idB.Mayfield_00-0034855          6.21e-08 ***
+passer_name_idB.Nix_00-0039732               0.105596    
+passer_name_idB.Purdy_00-0037834             6.90e-12 ***
+passer_name_idB.Rypien_00-0034955            0.205335    
+passer_name_idB.Young_00-0039150             0.820371    
+passer_name_idB.Zappe_00-0038108             0.024469 *  
+passer_name_idC.Beathard_00-0033936          0.567937    
+passer_name_idC.Godwin_00-0033921            0.643774    
+passer_name_idC.Keenum_00-0028986            0.319394    
+passer_name_idC.Kirk_00-0034775              0.419289    
+passer_name_idC.Rush_00-0033662              0.928118    
+passer_name_idC.Stroud_00-0039163            1.94e-05 ***
+passer_name_idC.Sutton_00-0034348            0.000573 ***
+passer_name_idC.Tune_00-0038582              0.003175 ** 
+passer_name_idC.Wentz_00-0032950             0.226462    
+passer_name_idC.Williams_00-0039918          0.076441 .  
+passer_name_idC.Wilson_00-0034418            0.185783    
+passer_name_idCo.Heyward_00-0037304          0.869530    
+passer_name_idD.Brown_00-0036626             0.735145    
+passer_name_idD.Carr_00-0031280              0.001601 ** 
+passer_name_idD.Henry_00-0032764             0.089557 .  
+passer_name_idD.Hopkins_00-0030564           0.785770    
+passer_name_idD.Jones_00-0035710             0.949598    
+passer_name_idD.Lock_00-0035704              0.871207    
+passer_name_idD.London_00-0037238            0.230516    
+passer_name_idD.Maye_00-0039851              0.148222    
+passer_name_idD.Mills_00-0036898             0.402143    
+passer_name_idD.Montgomery_00-0035685        0.323252    
+passer_name_idD.Mooney_00-0036309            0.782870    
+passer_name_idD.Moore_00-0034827             0.771180    
+passer_name_idD.Prescott_00-0033077          1.54e-05 ***
+passer_name_idD.Ridder_00-0038122            0.562575    
+passer_name_idD.Samuel_00-0035719            0.773212    
+passer_name_idD.Singletary_00-0035250        0.230951    
+passer_name_idD.Thompson-Robinson_00-0038583 0.000343 ***
+passer_name_idD.Watson_00-0033537            0.984363    
+passer_name_idD.Wicks_00-0038393             0.563101    
+passer_name_idE.Stick_00-0035282             0.455631    
+passer_name_idG.Minshew_00-0035289           0.086957 .  
+passer_name_idG.Smith_00-0030565             0.000457 ***
+passer_name_idG.Wilson_00-0037740            0.778047    
+passer_name_idH.Hooker_00-0038550            0.705960    
+passer_name_idJ.Allen_00-0034857             1.23e-07 ***
+passer_name_idJ.Brissett_00-0033119          0.680817    
+passer_name_idJ.Browning_00-0035100          0.017601 *  
+passer_name_idJ.Burrow_00-0036442            4.40e-07 ***
+passer_name_idJ.Chase_00-0036900             0.171521    
+passer_name_idJ.Coker_00-0039491             0.394067    
+passer_name_idJ.Daniels_00-0039910           0.000467 ***
+passer_name_idJ.Dobbs_00-0033949             0.963173    
+passer_name_idJ.Driskel_00-0032436           0.502877    
+passer_name_idJ.Fields_00-0036945            0.056765 .  
+passer_name_idJ.Flacco_00-0026158            0.181248    
+passer_name_idJ.Fox_00-0035156               0.018026 *  
+passer_name_idJ.Garoppolo_00-0031345         0.428677    
+passer_name_idJ.Goff_00-0033106              6.50e-11 ***
+passer_name_idJ.Haener_00-0038998            0.590877    
+passer_name_idJ.Hall_00-0038598              0.830678    
+passer_name_idJ.Hekker_00-0028872            0.004067 ** 
+passer_name_idJ.Herbert_00-0036355           8.34e-05 ***
+passer_name_idJ.Hurts_00-0036389             8.55e-06 ***
+passer_name_idJ.Jefferson_00-0036322         0.221744    
+passer_name_idJ.Johnson_00-0026300           0.812919    
+passer_name_idJ.Love_00-0036264              5.02e-05 ***
+passer_name_idJ.McKinnon_00-0031376          0.472305    
+passer_name_idJ.Meyers_00-0034960            0.744579    
+passer_name_idJ.Milton_00-0039398            0.154546    
+passer_name_idJ.Mixon_00-0033897             0.636809    
+passer_name_idJ.Reeves-Maybin_00-0033557     0.007064 ** 
+passer_name_idJ.Scott_00-0034162             0.078426 .  
+passer_name_idJ.Smith_00-0033858             0.575213    
+passer_name_idJ.Smith-Njigba_00-0038543      0.144606    
+passer_name_idJ.Stidham_00-0035264           0.200842    
+passer_name_idJ.Winston_00-0031503           0.976348    
+passer_name_idK.Allen_00-0030279             0.368337    
+passer_name_idK.Allen_00-0034577             0.351600    
+passer_name_idK.Bourne_00-0033307            0.390736    
+passer_name_idK.Cousins_00-0029604           0.002524 ** 
+passer_name_idK.Gainwell_00-0036919          0.422139    
+passer_name_idK.Murray_00-0035228            0.014653 *  
+passer_name_idK.Pickett_00-0038102           0.880656    
+passer_name_idK.Toney_00-0036913             0.771766    
+passer_name_idK.Trask_00-0036928             0.466856    
+passer_name_idL.Cooke_00-0034437             0.095432 .  
+passer_name_idL.Jackson_00-0034796           3.70e-12 ***
+passer_name_idL.Woodside_00-0034438          0.005816 ** 
+passer_name_idM.Jones_00-0036972             0.759783    
+passer_name_idM.Killebrew_00-0032399         0.081664 .  
+passer_name_idM.Mariota_00-0032268           0.037486 *  
+passer_name_idM.Nabers_00-0039337            0.530888    
+passer_name_idM.Penix_00-0039917             0.200070    
+passer_name_idM.Rudolph_00-0034771           0.224431    
+passer_name_idM.Stafford_00-0026498          0.000239 ***
+passer_name_idM.Trubisky_00-0033869          0.836315    
+passer_name_idM.White_00-0034401             0.023214 *  
+passer_name_idM.Willis_00-0038128            0.003077 ** 
+passer_name_idN.Mullens_00-0033319           0.051311 .  
+passer_name_idP.Mahomes_00-0033873           0.000203 ***
+passer_name_idP.Walker_00-0033275            0.418395    
+passer_name_idR.Dixon_00-0032943             0.216987    
+passer_name_idR.Pearsall_00-0039916          0.729900    
+passer_name_idR.Tannehill_00-0029701         0.270667    
+passer_name_idR.Wilson_00-0029263            0.018367 *  
+passer_name_idS.Clifford_00-0038391          0.163365    
+passer_name_idS.Darnold_00-0034869           0.000336 ***
+passer_name_idS.Diggs_00-0031588             0.072414 .  
+passer_name_idS.Howell_00-0037077            0.540425    
+passer_name_idS.Rattler_00-0039376           0.127028    
+passer_name_idS.Thompson_00-0037327          0.683988    
+passer_name_idT.Atwell_00-0036849            0.739636    
+passer_name_idT.Bagent_00-0038416            0.493809    
+passer_name_idT.Boyd_00-0033009              0.001372 ** 
+passer_name_idT.Boyle_00-0034177             0.055879 .  
+passer_name_idT.DeVito_00-0038476            0.922098    
+passer_name_idT.Heinicke_00-0031800          0.747763    
+passer_name_idT.Hill_00-0033357              0.990868    
+passer_name_idT.Huntley_00-0035993           0.548190    
+passer_name_idT.Lance_00-0037012             0.410191    
+passer_name_idT.Lawrence_00-0036971          0.051434 .  
+passer_name_idT.McKee_00-0038400             0.068064 .  
+passer_name_idT.Morstead_00-0027114          0.082444 .  
+passer_name_idT.Siemian_00-0032156           0.034929 *  
+passer_name_idT.Tagovailoa_00-0036212        1.80e-09 ***
+passer_name_idT.Taylor_00-0028118            0.073243 .  
+passer_name_idT.Townsend_00-0035889          0.112668    
+passer_name_idW.Levis_00-0039152             0.417480    
+passer_name_idZ.Wilson_00-0037013            0.639509    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.538 on 35846 degrees of freedom
+Multiple R-squared:  0.01868,   Adjusted R-squared:  0.01482 
+F-statistic:  4.84 on 141 and 35846 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+<p>We can use the <a href="https://cran.r-project.org/web/packages/broom/vignettes/broom.html"><code>broom</code> package</a> to quickly grab a table of the QB coefficients:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>qb_naive_coefs <span class="ot">&lt;-</span> <span class="fu">tidy</span>(naive_epa_lm)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>qb_naive_coefs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 5
+   term                                  estimate std.error statistic p.value
+   &lt;chr&gt;                                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+ 1 passer_name_idA.Cole_00-0035190        4.33       1.54      2.82   0.00483
+ 2 passer_name_idA.Dalton_00-0027973     -0.00998    0.104    -0.0958 0.924  
+ 3 passer_name_idA.Lazard_00-0034521     -1.01       1.54     -0.657  0.511  
+ 4 passer_name_idA.McCarron_00-0031288   -0.635      0.688    -0.924  0.356  
+ 5 passer_name_idA.Mitchell_00-0039890    2.45       1.54      1.59   0.112  
+ 6 passer_name_idA.O'Connell_00-0038579   0.0813     0.0636    1.28   0.202  
+ 7 passer_name_idA.Richardson_00-0039164 -0.0217     0.0827   -0.263  0.793  
+ 8 passer_name_idA.Rodgers_00-0023459     0.111      0.0636    1.75   0.0808 
+ 9 passer_name_idA.St. Brown_00-0036963   1.72       1.54      1.12   0.262  
+10 passer_name_idB.Allen_00-0032434      -0.348      0.281    -1.24   0.215  
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>In order to make a plot comparing the coefficients, we can make a modified version of this table containing a column with the <code>passer_name_id</code> and fixed effect version for coefficients:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>qb_fixed_eff <span class="ot">&lt;-</span> qb_naive_coefs <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(term, estimate) <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove the `passer_name_id` in the strings</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">str_remove</span>(term, <span class="st">"passer_name_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">passer_name_id =</span> term,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">fixed_eff =</span> estimate)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>qb_fixed_eff</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 2
+   passer_name_id          fixed_eff
+   &lt;chr&gt;                       &lt;dbl&gt;
+ 1 A.Cole_00-0035190         4.33   
+ 2 A.Dalton_00-0027973      -0.00998
+ 3 A.Lazard_00-0034521      -1.01   
+ 4 A.McCarron_00-0031288    -0.635  
+ 5 A.Mitchell_00-0039890     2.45   
+ 6 A.O'Connell_00-0038579    0.0813 
+ 7 A.Richardson_00-0039164  -0.0217 
+ 8 A.Rodgers_00-0023459      0.111  
+ 9 A.St. Brown_00-0036963    1.72   
+10 B.Allen_00-0032434       -0.348  
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>We can now join this table of fixed effect QB estimates to the table containing the random effects via a join function (such as <code>left_join()</code> or <code>inner_join()</code> but my default behavior is to typically use <code>left_join()</code>):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>qb_ranef <span class="ot">&lt;-</span> qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(qb_fixed_eff,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"level"</span> <span class="ot">=</span> <span class="st">"passer_name_id"</span>))</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>qb_ranef</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 8
+   effect   group          level  term  estimate std.error q_intercept fixed_eff
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;  &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+ 1 ran_vals passer_name_id A.Col… (Int…  0.0261     0.121       0.118    4.33   
+ 2 ran_vals passer_name_id A.Dal… (Int… -0.0587     0.0790      0.0335  -0.00998
+ 3 ran_vals passer_name_id A.Laz… (Int… -0.00678    0.121       0.0854  -1.01   
+ 4 ran_vals passer_name_id A.McC… (Int… -0.0218     0.119       0.0704  -0.635  
+ 5 ran_vals passer_name_id A.Mit… (Int…  0.0145     0.121       0.107    2.45   
+ 6 ran_vals passer_name_id A.O'C… (Int… -0.00854    0.0564      0.0836   0.0813 
+ 7 ran_vals passer_name_id A.Ric… (Int… -0.0776     0.0683      0.0145  -0.0217 
+ 8 ran_vals passer_name_id A.Rod… (Int…  0.0148     0.0563      0.107    0.111  
+ 9 ran_vals passer_name_id A.St.… (Int…  0.0100     0.121       0.102    1.72   
+10 ran_vals passer_name_id B.All… (Int… -0.0689     0.111       0.0233  -0.348  
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>Using this table, we can now create a figure that displays the two types of estimates: no pooling (<code>fixed_eff</code>) and partial pooling (<code>q_intercept</code>). The following code chunk shows how to do this using the <code>pivot_longer()</code> function to make the dataset in a long format for <code>ggplot2</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>long_qb_eff_table <span class="ot">&lt;-</span> qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(level, q_intercept, fixed_eff) <span class="sc">|&gt;</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(q_intercept<span class="sc">:</span>fixed_eff,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"type"</span>,</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"estimate"</span>) </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Now make the visualization:</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>long_qb_eff_table <span class="sc">|&gt;</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># First recode the name of the estimate types:</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">type =</span> <span class="fu">fct_recode</span>(type, <span class="st">`</span><span class="at">no pooling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"fixed_eff"</span>,</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>                           <span class="st">`</span><span class="at">partial pooling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"q_intercept"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> level, <span class="at">y =</span> estimate, <span class="at">color =</span> type)) <span class="sc">+</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add horizontal dashed line for fixed effect intercept:</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(epa_lmm)),</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"QB"</span>, <span class="at">y =</span> <span class="st">"Estimate"</span>) <span class="sc">+</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>, <span class="at">size =</span> <span class="dv">4</span>),</span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see the noticeable impact from pooling on the QB intercepts, with all of the <strong>partial pooling</strong> estimates from the multilevel model getting pulled towards average line versus the extreme values based on <strong>no pooling</strong>.</p>
+<p>To illustrate this idea more clearly, the following figure zooms in on a sample of QBs (arbitrarily picked by me):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>long_qb_eff_table <span class="sc">|&gt;</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(level, <span class="st">"(Purdy)|(Mahomes)|(Fields)|(J</span><span class="sc">\\</span><span class="st">.Daniels)|(Hurts)|(B</span><span class="sc">\\</span><span class="st">.Young)"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">type =</span> <span class="fu">fct_recode</span>(type, <span class="st">`</span><span class="at">no pooling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"fixed_eff"</span>,</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                           <span class="st">`</span><span class="at">partial pooling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">"q_intercept"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> level, <span class="at">y =</span> estimate, <span class="at">color =</span> type)) <span class="sc">+</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add horizontal dashed line for fixed effect intercept:</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(epa_lmm)),</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"QB"</span>, <span class="at">y =</span> <span class="st">"Estimate"</span>) <span class="sc">+</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="comparison-of-regression-lines" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-of-regression-lines">Comparison of regression lines</h2>
+<p>As we discussed in previous lectures and demo material, we can add in other covariates as fixed effects. The use of varying intercepts will effectively lead to a distribution of regression lines for each passer in the dataset that is centered around the average passer line. The following code chunk first fits the updated <code>lmer</code> model with air yards as an additional feature:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>air_epa_lmm <span class="ot">&lt;-</span> <span class="fu">lmer</span>(epa <span class="sc">~</span> air_yards <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> passer_name_id), </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data =</span> nfl_passing_data, <span class="at">REML =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(air_epa_lmm)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear mixed model fit by REML ['lmerMod']
+Formula: epa ~ air_yards + (1 | passer_name_id)
+   Data: nfl_passing_data
+
+REML criterion at convergence: 132840.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-8.3328 -0.5391 -0.0849  0.5736  5.3048 
+
+Random effects:
+ Groups         Name        Variance Std.Dev.
+ passer_name_id (Intercept) 0.01414  0.1189  
+ Residual                   2.34071  1.5299  
+Number of obs: 35987, groups:  passer_name_id, 141
+
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept) -0.0383751  0.0178653  -2.148
+air_yards    0.0169528  0.0007922  21.400
+
+Correlation of Fixed Effects:
+          (Intr)
+air_yards -0.342</code></pre>
+</div>
+</div>
+<p>Similar to before, we can grab the random intercepts for each passer:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>upd_qb_ranef <span class="ot">&lt;-</span> <span class="fu">tidy</span>(air_epa_lmm, <span class="at">effects =</span> <span class="st">"ran_vals"</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="co"># View the dataset</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>upd_qb_ranef</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 141 × 6
+   effect   group          level                   term       estimate std.error
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;                   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+ 1 ran_vals passer_name_id A.Cole_00-0035190       (Intercep…  0.0258     0.119 
+ 2 ran_vals passer_name_id A.Dalton_00-0027973     (Intercep… -0.0519     0.0781
+ 3 ran_vals passer_name_id A.Lazard_00-0034521     (Intercep… -0.00757    0.119 
+ 4 ran_vals passer_name_id A.McCarron_00-0031288   (Intercep… -0.0167     0.117 
+ 5 ran_vals passer_name_id A.Mitchell_00-0039890   (Intercep…  0.0155     0.119 
+ 6 ran_vals passer_name_id A.O'Connell_00-0038579  (Intercep… -0.00814    0.0559
+ 7 ran_vals passer_name_id A.Richardson_00-0039164 (Intercep… -0.118      0.0676
+ 8 ran_vals passer_name_id A.Rodgers_00-0023459    (Intercep…  0.0254     0.0558
+ 9 ran_vals passer_name_id A.St. Brown_00-0036963  (Intercep…  0.0101     0.119 
+10 ran_vals passer_name_id B.Allen_00-0032434      (Intercep… -0.0684     0.109 
+# ℹ 131 more rows</code></pre>
+</div>
+</div>
+<p>And then modify the dataset to include columns for the regression intercepts and slopes based on the fixed effects:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>upd_qb_ranef <span class="ot">&lt;-</span> upd_qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Grab the fixed effect estimates and coefficients via 1 for intercept and </span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># 2 for slope:</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q_intercept =</span> estimate <span class="sc">+</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(air_epa_lmm))[<span class="dv">1</span>],</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">q_slope =</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(air_epa_lmm))[<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With this dataset, we can now make a visualization that has a regression line for every QB given their respective intercepts (and shared slope):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>upd_qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="fu">aes</span>(<span class="at">slope =</span> q_slope, <span class="at">intercept =</span> q_intercept),</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">+</span></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">5</span>,</span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>                                <span class="fu">max</span>(nfl_passing_data<span class="sc">$</span>air_yards))) <span class="sc">+</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Air yards of pass attempt"</span>, <span class="at">y =</span> <span class="st">"Expected points added"</span>) <span class="sc">+</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For reference we will also add the “center” regression line on top of the distribution of regression lines just based on the fixed effects. You can see in the figure below that this average line (in dashed red) aligns closely with the thick black line from the previous figure that represents the mode of the regression lines:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>upd_qb_ranef <span class="sc">|&gt;</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="fu">aes</span>(<span class="at">slope =</span> q_slope, <span class="at">intercept =</span> q_intercept),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.1</span>) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(air_epa_lmm))[<span class="dv">2</span>],</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">intercept =</span> <span class="fu">as.numeric</span>(<span class="fu">fixef</span>(air_epa_lmm))[<span class="dv">1</span>],</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>)) <span class="sc">+</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">5</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                                <span class="fu">max</span>(nfl_passing_data<span class="sc">$</span>air_yards))) <span class="sc">+</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Air yards of pass attempt"</span>, <span class="at">y =</span> <span class="st">"Expected points added"</span>) <span class="sc">+</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="08-random-effects-pooling_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/ryurko\.github\.io\/cmu-sportsanalytics-spring25\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
