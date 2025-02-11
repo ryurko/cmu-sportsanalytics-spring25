@@ -1,0 +1,227 @@
+---
+title: "Lecture 9: Random effects and pooling"
+format: html
+---
+
+## Introduction
+
+The purpose of this demo is to demonstrate how to access random effect estimates from multilevel models with insight about the behavior of pooling. Building off the previous demos and lecture content, we'll look at this in the context of modeling the dataset of NFL pass attempts. As a reminder, you can find the dataset and code to create the data (`init_nfl_passing_data.R`) on Canvas in the demos/week3 folder.  
+
+The following code chunk reads in the relevant dataset (assuming it is in the correct directory) of passing plays:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_passing_data <- read_csv(here::here("data/nfl_passing_data.csv"))
+nfl_passing_data
+```
+
+## Accessing random effect estimates
+
+We'll first demonstrate how to grab random effect estimates in the context of a varying intercepts model for modeling EPA, using the same model from the `varying_ints_slopes.qmd` demo. The following code chunk fits this model (with the default setting of `REML = TRUE` this time):
+
+```{r}
+library(lme4)
+epa_lmm <- lmer(epa ~ (1 | passer_name_id), 
+                data = nfl_passing_data, REML = TRUE)
+
+summary(epa_lmm)
+```
+
+There are a couple of ways of accessing the random effects estimates from the model. The first way is to use the `lme4` package function `ranef()`:
+
+```{r}
+ranef(epa_lmm)
+```
+
+You can see this returns a list of the individual effects for each QB. Note, that these values alone are NOT the mean intercept for each QB in the dataset. Instead, you must add the fixed effect intercept to these values to get the QB-specific intercepts.
+
+In order to make a process like that easier, it can be helpful to use the [`broom.mixed` package](https://github.com/bbolker/broom.mixed) which has convenient helper functions for tidying the `lme4` model output. We can extract the random effects from the model using this package with `tidy(lmer_model, effects = "ran_vals")`, and store the values in a table:
+
+```{r}
+library(broom.mixed)
+qb_ranef <- tidy(epa_lmm, effects = "ran_vals")
+# View the dataset
+qb_ranef
+```
+
+We can visualize the distribution of the QB random effects to see how they are centered around zero below:
+
+```{r}
+qb_ranef |>
+  ggplot(aes(x = estimate)) +
+  geom_histogram(color = "black", fill = "blue", alpha = 0.5) +
+  labs(x = "QB random effect", y = "Count") +
+  theme_bw()
+```
+
+We can add a column to this table with the intercepts for each QB by simply adding the fixed effect intercept (grabbed with `fixef(epa_lmm)`) to the `estimate` column in the dataset above:
+
+```{r}
+qb_ranef <- qb_ranef |>
+  mutate(q_intercept = estimate + as.numeric(fixef(epa_lmm)))
+
+qb_ranef
+```
+
+The following figure now displays the QB intercepts, which is effectively the same figure as before but now the center is shifted based on the fixed effect intercept:
+
+```{r}
+qb_ranef |>
+  ggplot(aes(x = q_intercept)) +
+  geom_histogram(color = "black", fill = "blue", alpha = 0.5) +
+  labs(x = "QB intercept estimate", y = "Count") +
+  theme_bw()
+```
+
+## Demonstration of pooling for intercepts
+
+To demonstrate the role of __pooling__, we can compare the QB intercepts from the multilevel model above versus the traditional regression approach by fitting separate intercepts for each QB. For instance, the following code chunk fits an intercept-only regression model __without__ random effects (note the use of -1 to remove the global intercept here):
+
+```{r}
+naive_epa_lm <- lm(epa ~ -1 + passer_name_id, data = nfl_passing_data)
+summary(naive_epa_lm)
+```
+
+We can use the [`broom` package](https://cran.r-project.org/web/packages/broom/vignettes/broom.html) to quickly grab a table of the QB coefficients:
+
+```{r}
+library(broom)
+qb_naive_coefs <- tidy(naive_epa_lm)
+qb_naive_coefs
+```
+
+In order to make a plot comparing the coefficients, we can make a modified version of this table containing a column with the `passer_name_id` and fixed effect version for coefficients:
+
+```{r}
+qb_fixed_eff <- qb_naive_coefs |>
+  dplyr::select(term, estimate) |>
+  # Remove the `passer_name_id` in the strings
+  mutate(term = str_remove(term, "passer_name_id")) |>
+  rename(passer_name_id = term,
+         fixed_eff = estimate)
+
+qb_fixed_eff
+```
+
+We can now join this table of fixed effect QB estimates to the table containing the random effects via a join function (such as `left_join()` or `inner_join()` but my default behavior is to typically use `left_join()`):
+
+```{r}
+qb_ranef <- qb_ranef |>
+  left_join(qb_fixed_eff,
+            by = c("level" = "passer_name_id"))
+qb_ranef
+```
+
+Using this table, we can now create a figure that displays the two types of estimates: no pooling (`fixed_eff`) and partial pooling (`q_intercept`). The following code chunk shows how to do this using the `pivot_longer()` function to make the dataset in a long format for `ggplot2`:
+
+```{r}
+long_qb_eff_table <- qb_ranef |>
+  dplyr::select(level, q_intercept, fixed_eff) |>
+  pivot_longer(q_intercept:fixed_eff,
+               names_to = "type",
+               values_to = "estimate") 
+
+# Now make the visualization:
+long_qb_eff_table |>
+  # First recode the name of the estimate types:
+  mutate(type = fct_recode(type, `no pooling` = "fixed_eff",
+                           `partial pooling` = "q_intercept")) |>
+  ggplot(aes(x = level, y = estimate, color = type)) +
+  geom_point() +
+  # Add horizontal dashed line for fixed effect intercept:
+  geom_hline(yintercept = as.numeric(fixef(epa_lmm)),
+             linetype = "dashed", color = "black") +
+  labs(x = "QB", y = "Estimate") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, size = 4),
+        legend.position = "bottom")
+```
+
+We can see the noticeable impact from pooling on the QB intercepts, with all of the __partial pooling__ estimates from the multilevel model getting pulled towards average line versus the extreme values based on __no pooling__.
+
+To illustrate this idea more clearly, the following figure zooms in on a sample of QBs (arbitrarily picked by me):
+
+```{r}
+long_qb_eff_table |>
+  filter(str_detect(level, "(Purdy)|(Mahomes)|(Fields)|(J\\.Daniels)|(Hurts)|(B\\.Young)")) |>
+  mutate(type = fct_recode(type, `no pooling` = "fixed_eff",
+                           `partial pooling` = "q_intercept")) |>
+  ggplot(aes(x = level, y = estimate, color = type)) +
+  geom_point() +
+  # Add horizontal dashed line for fixed effect intercept:
+  geom_hline(yintercept = as.numeric(fixef(epa_lmm)),
+             linetype = "dashed", color = "black") +
+  labs(x = "QB", y = "Estimate") +
+  theme_bw() +
+  coord_flip() +
+  theme(legend.position = "bottom")
+```
+
+
+## Comparison of regression lines
+
+As we discussed in previous lectures and demo material, we can add in other covariates as fixed effects. The use of varying intercepts will effectively lead to a distribution of regression lines for each passer in the dataset that is centered around the average passer line. The following code chunk first fits the updated `lmer` model with air yards as an additional feature:
+
+```{r}
+air_epa_lmm <- lmer(epa ~ air_yards + (1 | passer_name_id), 
+                    data = nfl_passing_data, REML = TRUE)
+
+summary(air_epa_lmm)
+```
+
+Similar to before, we can grab the random intercepts for each passer:
+
+```{r}
+upd_qb_ranef <- tidy(air_epa_lmm, effects = "ran_vals")
+# View the dataset
+upd_qb_ranef
+```
+
+And then modify the dataset to include columns for the regression intercepts and slopes based on the fixed effects:
+
+```{r}
+upd_qb_ranef <- upd_qb_ranef |>
+  # Grab the fixed effect estimates and coefficients via 1 for intercept and 
+  # 2 for slope:
+  mutate(q_intercept = estimate + as.numeric(fixef(air_epa_lmm))[1],
+         q_slope = as.numeric(fixef(air_epa_lmm))[2])
+```
+
+With this dataset, we can now make a visualization that has a regression line for every QB given their respective intercepts (and shared slope): 
+
+```{r}
+upd_qb_ranef |>
+  ggplot() +
+  geom_abline(aes(slope = q_slope, intercept = q_intercept),
+              alpha = 0.1) +
+  scale_y_continuous(limits = c(-2, 2)) +
+  scale_x_continuous(limits = c(-5,
+                                max(nfl_passing_data$air_yards))) +
+  labs(x = "Air yards of pass attempt", y = "Expected points added") +
+  theme_bw()
+```
+
+For reference we will also add the "center" regression line on top of the distribution of regression lines just based on the fixed effects. You can see in the figure below that this average line (in dashed red) aligns closely with the thick black line from the previous figure that represents the mode of the regression lines:
+
+```{r}
+upd_qb_ranef |>
+  ggplot() +
+  geom_abline(aes(slope = q_slope, intercept = q_intercept),
+              alpha = 0.1) +
+  geom_abline(slope = as.numeric(fixef(air_epa_lmm))[2],
+              intercept = as.numeric(fixef(air_epa_lmm))[1],
+              color = "red", linetype = "dashed") +
+  scale_y_continuous(limits = c(-2, 2)) +
+  scale_x_continuous(limits = c(-5,
+                                max(nfl_passing_data$air_yards))) +
+  labs(x = "Air yards of pass attempt", y = "Expected points added") +
+  theme_bw()
+```
+
+
+
+
+
+
