@@ -14,5 +14,6 @@ title: "Lectures"
 | 8         | Feb 6  | Nested and crossed random effects | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/156Twdfz9Q1vuyeisS_HseqwChmJeZv_wvAhfqBDzz_E/edit?usp=sharing)        |
 | 9         | Feb 11  | Model fitting and random effects | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/17CjAnLI6XoIGZUvQ23kbRkLuf8AyNK3A8mKZNAaFzd0/edit?usp=sharing)        |
 | 10        | Feb 13  | Random effects pooling and uncertainty | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1TWo74cCBujGRnwuCNS2eKyCc07LU_gDNYTb9b9UpA3o/edit?usp=sharing)        |
+| 11        | Feb 18  | Intro to Bayesian thinking | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1PItDAxqKlMWNxTjCLY8OoXBDPs7mg6mfSkHarG0ivXA/edit?usp=sharing)        |
 
 

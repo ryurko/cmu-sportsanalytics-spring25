@@ -15,3 +15,4 @@ title: "Demos"
 | 7      | Feb 6  | Nested and crossed random effects | [HTML](demos/07-nested-crossed-effects.qmd)  |
 | 8      | Feb 11  | Random effects and pooling | [HTML](demos/08-random-effects-pooling.qmd)  |
 | 9      | Feb 13  | Uncertainty about random effects | [HTML](demos/09-random-effects-uncertainty.qmd)  |
+| 10      | Feb 18  | Introduction to Bayes with a Binomial model | [HTML](demos/10-intro-bayes.qmd)  |
