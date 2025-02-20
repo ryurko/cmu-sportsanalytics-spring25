@@ -15,5 +15,6 @@ title: "Lectures"
 | 9         | Feb 11  | Model fitting and random effects | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/17CjAnLI6XoIGZUvQ23kbRkLuf8AyNK3A8mKZNAaFzd0/edit?usp=sharing)        |
 | 10        | Feb 13  | Random effects pooling and uncertainty | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1TWo74cCBujGRnwuCNS2eKyCc07LU_gDNYTb9b9UpA3o/edit?usp=sharing)        |
 | 11        | Feb 18  | Intro to Bayesian thinking | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1PItDAxqKlMWNxTjCLY8OoXBDPs7mg6mfSkHarG0ivXA/edit?usp=sharing)        |
+| 12        | Feb 20  | Beta-Binomial Model and Conjugate Priors | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1KWDuu-ofK7ABTO81dqRXwZJ-KUEk0wVjz1KNxSDp4oQ/edit?usp=sharing)        |
 
 
