@@ -2,66 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/lectures.html</loc>
-    <lastmod>2025-02-20T02:30:09.982Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.697Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/05-intro-multilevel-models.html</loc>
-    <lastmod>2025-02-20T02:30:09.977Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/01-logit-expected-goals.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/03-multinom-logit.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/02-calibration-cv.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/11-beta-binomial.html</loc>
-    <lastmod>2025-02-20T02:30:09.982Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.697Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04b-cpoe.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/09-random-effects-uncertainty.html</loc>
-    <lastmod>2025-02-20T02:30:09.977Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.692Z</lastmod>
+  </url>
+  <url>
+    <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/12-intro-rapm.html</loc>
+    <lastmod>2025-02-25T01:17:00.697Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/07-nested-crossed-effects.html</loc>
-    <lastmod>2025-02-20T02:30:09.977Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.692Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/10-intro-bayes.html</loc>
-    <lastmod>2025-02-20T02:30:09.982Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.697Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/04a-epa.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/08-random-effects-pooling.html</loc>
-    <lastmod>2025-02-20T02:30:09.977Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.692Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/00-into-tidyverse.html</loc>
-    <lastmod>2025-02-20T02:30:09.976Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/06-varying-ints-slopes.html</loc>
-    <lastmod>2025-02-20T02:30:09.977Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.691Z</lastmod>
   </url>
   <url>
     <loc>https://ryurko.github.io/cmu-sportsanalytics-spring25/index.html</loc>
-    <lastmod>2025-02-20T02:30:09.982Z</lastmod>
+    <lastmod>2025-02-25T01:17:00.697Z</lastmod>
   </url>
 </urlset>
