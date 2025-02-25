@@ -17,3 +17,4 @@ title: "Demos"
 | 9      | Feb 13  | Uncertainty about random effects | [HTML](demos/09-random-effects-uncertainty.qmd)  |
 | 10      | Feb 18  | Introduction to Bayes with a Binomial model | [HTML](demos/10-intro-bayes.qmd)  |
 | 11      | Feb 20  | Beta-Binomial model for Caitlin Clark's rookie season | [HTML](demos/11-beta-binomial.qmd)  |
+| 12      | Feb 25  | Introduction to Regularized Adjusted Plus-Minus (RAPM) | [HTML](demos/12-intro-rapm.qmd)  |
