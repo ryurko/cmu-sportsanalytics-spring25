@@ -17,5 +17,6 @@ title: "Lectures"
 | 11        | Feb 18  | Intro to Bayesian thinking | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1PItDAxqKlMWNxTjCLY8OoXBDPs7mg6mfSkHarG0ivXA/edit?usp=sharing)        |
 | 12        | Feb 20  | Beta-Binomial Model and Conjugate Priors | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1KWDuu-ofK7ABTO81dqRXwZJ-KUEk0wVjz1KNxSDp4oQ/edit?usp=sharing)        |
 | 13        | Feb 25  | Intro to Regularized Adjusted Plus-Minus Models | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1TtWdsG2oWeUx_-uYLVmG9WBXp3oTkctVr01bYl4aT0s/edit?usp=sharing)        |
+| 14        | Mar 11  | Methods for approximating the posterior | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1mSyfRNRUvS0zMl0ZmeHexjlaLAhRlNEfO_YxzsFwqbQ/edit?usp=sharing)        |
 
 
