@@ -1,0 +1,201 @@
+---
+title: "Lecture 15: Introduction to Stan"
+format: html
+---
+
+## Introduction
+
+The purpose of this demo is to demonstrate how to use the [Stan probabilistic programming language](https://mc-stan.org/) in `R` with the [`rstan` package](https://mc-stan.org/rstan/index.html).
+
+Prior to proceeding through this demo, you need to install the `rstan` package. __PAY ATTENTION! This package is not installed like normal `R` packages!__ You need to follow the instructions (depending on your OS) that are [available here on GitHub](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started). In order to make sure you have `rstan` installed correctly, you should be able to run the following line of code directly in your console to fit an example Stan model. It will load up `fit`, `fit2`, `mod` and `stancode` in your environment but you can remove them after making sure code runs without any errors (note the warning messages you see are fine and expected).
+
+```{r}
+#| eval: false
+example(stan_model, package = "rstan", run.dontrun = TRUE)
+```
+
+
+In this demo, we'll once again consider the Beta-Binomial model for Caitlin Clark's FG%. Similar to the `posterior_approx.qmd` demo, we do not need to read in any data for this demonstration.
+
+## Beta-Binomial in Stan
+
+Assuming you have the `rstan` package installed, we can proceed to write-up our first Stan model. There are three main components to each Stan model:
+
+1. `data`: you specify what type of data is used for the model, including info specifying if it's an integer, real continuous number, are there bounds, etc. For our example, the only `data` will be the number of successful FG attempts $Y$ out of $n = 85$ trials. This section will also include other relevant information about the data that we'll see in the Bayesian RAPM Stan demo.
+
+2. `parameters`: what are the parameters of the model? In this example, we only have the $\pi$ parameter for the Binomial distribution probability of success. You'll also need to indicate the type and bounds for parameters.
+
+3. `model`: This the heart of the Stan code where you write out in code the model likelihood and prior (or more generally, the multilevel data generating process). As you'll see, the functions for the different distributions effectively look like what you see on wikipedia pages for each distribution. You have the name of the distribution with the parameter inputs.
+
+```{r}
+beta_binomial_model <- "
+  data {
+    // set-up the data as the number of success from 0 to 85
+    int<lower = 0, upper = 85> Y;
+  }
+  parameters {
+    // define the paramter pi
+    real<lower = 0, upper = 1> pi;
+  }
+  model {
+    // now write out the data-generating process, by sampling from 
+    // the Binomial model with n = 85 and then specify the prior for pi
+    Y ~ binomial(85, pi);
+    pi ~ beta(45.9, 68.7);
+  }
+"
+```
+
+
+And now we're ready to use `rstan` for approximating the posterior via simulation. We run the `stan()` function to do this where we provide it with the `model_code`, which can be stored in a string like above or as a `.stan` file. Additionally, we need to provide the input `data` as a list with names matching the specified `data` in the model code. The remaining input relates to the Markov chains:
+
++ `chains` tells Stan how many Markov chains to run in parallel, which is useful for speeding up the approximation. Additionally, this will be useful for diagnostics later on.
+
++ `iter` tells Stan how long each (i.e., how many iterations) each Markov chain should. However, you'll notice in the code chunk below that `iter = 5000 * 2`. This is because, by default via the `warmup` argument, the first half of the iterations are _warmup_ or _burn-in_ samples that are ignored. The idea behind this is that the first so many steps in the chain might be unreasonable values for the parameter of interest, so we let it run for a bit before grabbing samples that are hopefully reasonable in approximating the posterior distribution. 
+
++ `seed` for making sure we can replicate the randomness of the simulation results.
+
+The following code chunk performs a simulation with 5000 iterations across 4 Markov chains, thus resulting in a sample of 20,000 values to approximate the posterior distribution (__NOTE: this will take a few minutes to run since Stan effectively needs to compile code that is appropriate for the provided model and data__):
+
+```{r}
+library(rstan)
+beta_binomial_sim <- stan(model_code = beta_binomial_model, 
+                          data = list(Y = 33), 
+                          chains = 4, iter = 5000 * 2, 
+                          seed = 2025)
+```
+
+The output you see is just an overview of the four parallel Markov chains, with an indication of how long it took for reach chain to run through all iterations. Notice that Stan displays which iterations are `Warmup` (the first half for each chain) versus those used for `Sampling` from the posterior.
+
+Just for reference, the code chunk below shows how to use a `.stan` file instead of a string for the Stan model code. This file `beta_binom.stan` is available on Canvas in the demos/week9 folder. You will need to make sure the file path is correctly specified:
+
+```{r, eval = FALSE}
+beta_binomial_sim <- stan(file = "beta_binom.stan", 
+                          data = list(Y = 33), 
+                          chains = 4, iter = 5000 * 2, 
+                          seed = 2024)
+```
+
+In general, it is better practice write your Stan code in separate scripts since they can become quite complex (depending on your model).
+
+## Viewing the posterior simulations
+
+Similar to the manual trace plot we created with the Metropolis-Hastings algorithm, we can create a trace plot for our Stan posterior samples. The easiest way to do this is with the [`bayesplot` package](https://mc-stan.org/bayesplot/) created by the Stan team via the `mcmc_trace()` function which creates a trace plot with lines for each of the constructed Markov chains:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(bayesplot)
+
+# Display the trace plot:
+mcmc_trace(beta_binomial_sim, 
+           # What are the parameters? Just pi here
+           pars = "pi", 
+           # Modify the size of the lines
+           size = 0.5) +
+  # I changed the color scale and modified the theme:
+  scale_color_viridis_d() +
+  theme_bw()
+```
+
+We can also view the posterior distribution approximation (by combining the four chains post burn-in samples) via a couple different functions such as `mcmc_hist()`:
+
+```{r}
+mcmc_hist(beta_binomial_sim, pars = "pi") + 
+  # Add y-axis back
+  yaxis_text(TRUE) + 
+  ylab("count")
+```
+
+As well as `mcmc_dens()`, where the true posterior density is overlaid on top in red:
+
+```{r}
+mcmc_dens(beta_binomial_sim, pars = "pi") + 
+  yaxis_text(TRUE) + 
+  stat_function(fun = dbeta, args = list(78.9, 120.7),
+                color = "red") + 
+  ylab("density")
+```
+
+We can see that the posterior approximation is pretty close to the true posterior density, with just a slight difference in the center relative to the true red line. Otherwise, this is a pretty solid approximation that we should feel comfortable using.
+
+We can easily create a tidy table of the posterior sample using the `as.data.frame()` function with the parameters we want as input in `pars`. In this case, we only want the `pi` parameter (and can ignore the log-posterior values that are reported) and then turn it into a `tbl` object for ease. By default, this concatenates the samples from the four different Markov chains resulting in a complete table of 20,000 rows:
+
+```{r}
+posterior_sample <- as.data.frame(beta_binomial_sim, pars = "pi") |>
+  as_tibble()
+
+posterior_sample
+```
+
+Using this sample, we can proceed as before in visualizing the distribution with our own code:
+
+```{r}
+posterior_sample |>
+  ggplot(aes(x = pi)) +
+  geom_histogram(aes(y = after_stat(density))) +
+  stat_function(fun = dbeta, args = list(78.9, 120.7),
+                color = "red") + 
+  scale_x_continuous(limits = c(0, 1)) +
+  theme_bw()
+```
+
+And also compute relevant quantities about the posterior distribution:
+
+```{r}
+# Compute various summaries of posterior sample:
+posterior_sample |> 
+  summarize(posterior_mean = mean(pi), 
+            posterior_median = median(pi),
+            # Convenient function for mode:
+            posterior_mode = bayesrules::sample_mode(pi),
+            # 95% credible interval:
+            lower_95 = quantile(pi, 0.025),
+            upper_95 = quantile(pi, 0.975))
+```
+
+(You can see that the above values are slightly different than the truth that was seen in `posterior_approx.qmd`.)
+
+## Diagnostics
+
+Before you use the posterior samples for inference tasks, you should check diagnostics to assess the quality of your posterior simulation. There are a variety of different approaches to this, and we'll cover just a small number of them in the rest of this demo.
+
+The first thing to check is the trace plots of your Markov chains as visualized above. We want trace plots to look like random noise with no discernible patterns, such as the examples in this demo. We'll discuss problematic traces in lecture.
+
+Similar to displaying the trace plots with lines for each Markov chain, we can also compare the distributions for each Markov chain __separately__ with overlaid densities as displayed below:
+
+```{r}
+mcmc_dens_overlay(beta_binomial_sim, pars = "pi") +
+  scale_color_viridis_d() +
+  theme_bw()
+```
+
+We want stability across the separate chains, with each distribution appearing similar to each other. We do not observe any problems in this case, with each Markov chain displaying distributions that clearly overlap with shared characteristics. 
+
+Additionally, we can also compute the $\hat{R}$-ratio to assess if the variability in the parameter values with all Markov chains combined is greater than the variability within each chain:
+
+```{r}
+rhat(beta_binomial_sim, pars = "pi")
+```
+
+We would be concerned if this value was noticeably larger than 1 (although 1.05 is considered the threshold for concern). The above value is close enough to 1 to indicate that __the simulation is stable__ - with consistent posterior approximations across the four chains.
+
+Despite the fact that Markov chain samples are inherently dependent on the previous value, we want them to behave like independent samples to have a better approximation of the posterior distribution. One way to assess this is with an __autocorrelation__ plot, that observes the correlation between the Markov chain values at various sized lags. We can easily view the autocorrelations for each chain using `mcmc_acf()`:
+
+```{r}
+mcmc_acf(beta_binomial_sim, pars = "pi")
+```
+
+Here we see that the autocorrelation with lag-0 is 1, which is expected since that is just comparing a value with itself. Then with lag-1 the correlation drops to 0.5, and then shortly reaches 0 by just 5 steps in the chain across the four chains. This behavior is ideal, indicating that our samples are __fast mixing__: the samples are moving around the posterior distribution quickly. 
+
+In addition to the autocorrelation plots, we can compute the __effective sample size ratio__ which is a ratio between the __effective sample size__ of the chain divided by the actual sample size:
+
+```{r}
+neff_ratio(beta_binomial_sim, pars = "pi")
+```
+
+We would be concerned by a really low value, such as 0.1 which is considered a problematic threshold. In this case, our value is not worrisome and we would be comfortable relying on our posterior samples for inference tasks.
+
+
+
