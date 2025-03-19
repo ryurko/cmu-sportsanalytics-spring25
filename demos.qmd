@@ -20,3 +20,4 @@ title: "Demos"
 | 12      | Feb 25  | Introduction to Regularized Adjusted Plus-Minus (RAPM) | [HTML](demos/12-intro-rapm.qmd)  |
 | 13      | Mar 11  | Methods for Approximating the Posterior | [HTML](demos/13-posterior-approx.qmd)  |
 | 14      | Mar 18  | Introduction to Stan | [HTML](demos/14-intro-stan.qmd)  |
+| 15      | Mar 20  | Bayesian RAPM in Stan | [HTML](demos/15-bayes-rapm-stan.qmd)  |
