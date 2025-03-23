@@ -20,5 +20,5 @@ title: "Lectures"
 | 14        | Mar 11  | Methods for approximating the posterior | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1mSyfRNRUvS0zMl0ZmeHexjlaLAhRlNEfO_YxzsFwqbQ/edit?usp=sharing)        |
 | 15        | Mar 18  | MCMC Cont. and Intro to Stan | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1AfvfabEI5ews2S8DNJ9DlMoaKM7AZ4KDoUEyL2igUMY/edit?usp=sharing)        |
 | 16        | Mar 20  | Bayesian RAPM in Stan | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1sidWaepnb8mnhOn_thHdBVKb71-n96xtlLthQ8eAZeY/edit?usp=sharing)        |
-
+| 17        | Mar 25  | (Bayesian) Multilevel Modeling with Heterogeneity | [Quarto slides](lectures/17-multilevel-heterogeneity.qmd)
 

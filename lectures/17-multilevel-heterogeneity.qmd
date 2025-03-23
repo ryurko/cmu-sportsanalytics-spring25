@@ -1,0 +1,642 @@
+---
+title: "Bayesian multilevel modeling in the wild: Beyond homogeneity"
+subtitle: "<br>36-460/660<br><br>March 25, 2025"
+format:
+  revealjs:
+    theme: theme.scss
+    chalkboard: true
+    smaller: true
+    slide-number: c/t
+    code-line-numbers: false
+    code-fold: true
+    linestretch: 1.25
+    html-math-method:
+      method: mathjax
+      url: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+---
+
+
+## Agenda
+
+What have you seen so far?
+
+* Multilevel models
+
+* Bayesian statistics
+
+. . .
+
+Today
+
+* Multilevel modeling with variance heterogeneity
+
+* `brms` package
+
+* Note: Demo materials are within these slides (not in a separate file as usual)
+
+. . .
+
+Key takeaways
+
+* The process of developing a model
+
+* A real application of multilevel modeling and Bayesian inference
+
+  * Hopefully you'll find this useful (e.g., for future projects)
+
+# Motivating example
+
+## Snap timing in American football
+
+```{r}
+library(tidyverse)
+
+fake_points <- tibble(
+  y = 0, 
+  x = c(0, 0.2, 0.45, 0.6, 0.9),
+  col = c("black", "darkorange", "darkorange", "black", "black"),
+  txt = c("Lineset", "Motion", "Snap", "Pass", "End")
+)
+
+p_base <- ggplot() +
+  theme_void() +
+  annotate("segment", x = 0, y = 0, xend = 1, yend = 0,
+           arrow = arrow(type = "closed", length = unit(0.03, "npc"))) +
+  annotate("segment", x = 0.45, y = 0, xend = 0.45, yend = 0.45, linetype = "dashed") +
+  annotate("text", x = c(0.2, 0.75), y = 0.5, label = c("PRE-SNAP", "POST-SNAP"), size = 10, fontface = "bold") +
+  geom_text(data = fake_points, aes(x, y, label = txt), vjust = 2.5, size = 7) +
+  expand_limits(y = -0.04)
+```
+
+```{r}
+p_base +
+  geom_point(data = fake_points, aes(x, y), size = 6)
+```
+
+## Snap timing in American football
+
+```{r}
+p_base +
+  geom_point(data = fake_points, aes(x, y, color = I(col)), size = 6)
+```
+
+## Defining snap timing: $\ \ \ \small \delta_i = t_i^{\text{snap}}-t_i^{\text{motion}}$
+
+```{r}
+p_base +
+  geom_point(data = fake_points, aes(x, y, color = I(col)), size = 6) +
+  annotate("segment", x = 0.21, y = 0, xend = 0.44, yend = 0, linewidth = 2.5, color = "darkorange")
+```
+
+## Example play
+
+<center>
+
+![](https://raw.githubusercontent.com/qntkhvn/timing/refs/heads/main/figures/kelce_motion_full.gif){width="58%"}
+
+</center>
+
+## Why do we care about snap timing?
+
+* Our main quantity of interest is the **variability** in snap timing
+
+  * Across different plays, the offense does not snap the ball at the same time after a receiver goes in motion
+  
+. . .
+
+* QB skill: synchronizing the snap with motion
+
+. . .
+
+* If the snap timing is consistent/predictable, defenders can anticipate the snap and time their actions to disrupt the play
+
+. . .
+
+* Higher variability in snap timing can be beneficial — prevents defenses from predicting when the snap will occur
+
+## Data
+
+* Play-level information (each row is a play, with various attributes, including the snap timing `frame_between`)
+
+* Summarized from player tracking data provided by the [NFL Big Data Bowl 2025](https://www.kaggle.com/competitions/nfl-big-data-bowl-2025) (first 9 weeks of the 2022 NFL season)
+
+```{r}
+#| echo: true
+#| attr-output: "style='font-size: 0.75em;'"
+library(tidyverse)
+theme_set(theme_light(base_size = 15))
+plays_snap_timing <- read_csv("https://github.com/qntkhvn/timing/raw/refs/heads/main/scripts/plays_snap_timing_demo.csv.gz")
+glimpse(plays_snap_timing)
+```
+
+
+# Multilevel modeling with variance heterogeneity
+
+## Modeling the play-level snap timing with a ??? distribution
+
+```{r}
+#| echo: true
+#| fig-height: 4
+#| fig-width: 8
+#| fig-align: "center"
+plays_snap_timing |> 
+  ggplot(aes(frame_between)) +
+  geom_histogram(bins = 40, fill = "gray90", color = "gray30") +
+  labs(x = "Frames between motion and ball snap",
+       y = "Frequency")
+```
+
+## Modeling the play-level snap timing with a Gamma distribution: $\ \ \ \small \delta_i \sim \textsf{Gamma}(\mu_i, \alpha_i)$
+
+* Parameterized by mean $\mu$ and shape $\alpha > 0$ $$f_Y(y; \mu, \alpha) = \frac{(\alpha / \mu)^\alpha}{\Gamma(\alpha)} y^{\alpha-1} \exp\left(-\frac{\alpha y}{\mu}\right), \quad y \ge 0$$ for which $\mathbb E(Y)=\mu$ and $\textsf{Var}(Y)=\mu^2 / \alpha$
+
+* Gamma regression is a distributional regression (modeling overall shape of distribution)
+
+* Fit separate models for both parameters $\mu$ and $\alpha$ and see how the overall distribution shifts based on different covariates
+
+## From usual to alternative parameterization
+
+* Recall the usual parameterization of a Gamma distribution with 2 parameters<br>shape $\alpha > 0$ and scale $\theta > 0$
+
+$$
+\begin{aligned}
+Y &\sim \textsf{Gamma}(\alpha, \theta)\\
+f_Y(y; \alpha, \theta) &= \frac{1}{\Gamma(\alpha) \theta^ \alpha}y^{\alpha-1}\exp\left(-\frac{y}{\theta}\right)
+\end{aligned}
+$$
+with $\mathbb E(Y) =\mu = \alpha \theta$ and $\textsf{Var}(Y) = \alpha \theta^2$
+
+* Therefore, to reparameterize, simply set $\theta = \mu / \alpha$
+
+* (Another example: [Beta regression](https://www.andrewheiss.com/blog/2021/11/08/beta-regression-guide/))
+
+## Modeling the mean parameter with covariates + player and team random effects
+
+$$
+\begin{aligned}
+\log\mu_i&=\gamma_0+\boldsymbol{\beta X_i}+b_{q[i]}+b_{m[i]}+b_{d[i]}\\
+b_q&\sim\textsf{Normal}(0,\sigma^2_q)\\
+b_m&\sim\textsf{Normal}(0,\sigma^2_m)\\
+b_d&\sim\textsf{Normal}(0,\sigma^2_d)\\
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\\
+\boldsymbol X = 
+\small
+\{ &\text{down},\\
+& \text{play clock at motion},\\
+& \text{timeouts remaining (offense)},\\
+& \text{motion players since lineset},\\
+& \text{position},\\
+& \textcolor{blue}{\text{motion type}} \}\\
+\end{aligned}
+$$
+
+## Modeling the shape parameter with random intercept for QB
+
+$$
+\begin{aligned}
+\log\alpha_i&=\psi_0+u_{q[i]}\\
+u_q&\sim\textsf{Normal}(0,\tau^2_q)\\
+\end{aligned}
+$$
+
+* Recall that the shape parameter $\alpha$ is proportional to the variance of a Gamma distribution
+
+* This allows us to estimate the differences in snap timing variability among NFL quarterbacks
+
+
+## Full model
+
+* Implemented in a Bayesian framework
+
+* Uncertainty quantification for all model parameters with posterior distributions
+
+::: columns
+
+::: {.column width="50%" style="text-align: left;"}
+
+$$
+\begin{aligned}
+\delta_i&\sim\textsf{Gamma}(\mu_i,\alpha_i)\\
+\\
+\log\mu_i&=\gamma_0+\boldsymbol{\beta X_i}+b_{q[i]}+b_{m[i]}+b_{d[i]}\\
+b_q&\sim\textsf{Normal}(0,\sigma^2_q)\\
+b_m&\sim\textsf{Normal}(0,\sigma^2_m)\\
+b_d&\sim\textsf{Normal}(0,\sigma^2_d)\\
+\\
+\log\alpha_i&=\psi_0+u_{q[i]}\\
+u_q&\sim\textsf{Normal}(0,\tau^2_q)\\
+\end{aligned}
+$$
+
+:::
+
+::: {.column width="50%" style="text-align: left;"}
+
+$$
+\begin{aligned}
+\\
+\\
+\\
+\sigma_q &\sim \textsf{half-}t_3\\
+\sigma_m &\sim \textsf{half-}t_3\\
+\sigma_d &\sim \textsf{half-}t_3\\
+\\
+\\
+\\
+\tau_q &\sim \textsf{half-}t_3\\
+\end{aligned}
+$$
+
+:::
+
+:::
+
+
+# Model fitting with `brms` package
+
+## What is `brms`?
+
+::: columns
+
+::: {.column width="40%" style="text-align: left;"}
+
+* Interface to `Stan`
+
+* `lme4`-like formula syntax 
+
+* This means you don't have to write actual `Stan` programs
+
+* Supports a [wide range of models](https://rdrr.io/cran/brms/man/brmsfamily.html)
+
+* Website: [`paulbuerkner.com/brms`](https://paulbuerkner.com/brms/)
+
+:::
+
+::: {.column width="60%" style="text-align: left;"}
+
+<center>
+
+![](https://figures.semanticscholar.org/4bf0e9786d6638dc7d4b1fc929def68da9003c4e/6-Figure1-1.png){width="67%"}
+
+</center>
+
+
+
+:::
+
+:::
+
+
+<!-- ::: {.callout-note title="From the package description" collapse="true"} -->
+<!-- > A wide range of distributions and link functions are supported, allowing users to fit – among others – linear, robust linear, count data, survival, response times, ordinal, zero-inflated, hurdle, and even self-defined mixture models all in a multilevel context. Further modeling options include both theory-driven and data-driven non-linear terms, auto-correlation structures, censoring and truncation, meta-analytic standard errors, and quite a few more. In addition, all parameters of the response distribution can be predicted in order to perform distributional regression. -->
+<!-- ::: -->
+
+
+
+## `brms` syntax
+
+::: {.panel-tabset}
+
+### `lme4` version
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+# data from previous demo
+# https://ryurko.github.io/cmu-sportsanalytics-spring25/demos/09-random-effects-uncertainty.html
+library(lme4)
+nfl_passing_glmer <- glmer(complete_pass ~ air_yards + (1 | passer_name_id) + 
+                             (1 | receiver_name_id) + (1 | defteam),
+                           family = binomial, 
+                           data = nfl_passing_data)
+```
+
+### `brms` version
+
+```{r}
+#| echo: true
+#| eval: false
+#| code-fold: false
+library(brms)
+nfl_passing_brm <- brm(complete_pass ~ air_yards + (1 | passer_name_id) + 
+                         (1 | receiver_name_id) + (1 | defteam),
+                       family = bernoulli, 
+                       data = nfl_passing_data,
+                       iter = 5000,
+                       warmup = 2500,
+                       chains = 4,
+                       cores = 4,
+                       backend = "cmdstanr",
+                       seed = 3)
+```
+
+Recommendation:
+
+* Use the `cmdstanr` backend for `Stan` (instead of the default `rstan`)
+* First install `cmdstanr` (see [this link](https://mc-stan.org/cmdstanr)) and then run `cmdstanr::install_cmdstan()`
+
+:::
+
+
+## Fitting multilevel model for snap timing
+
+* Need to specify model formula both for mean and shape parameter<br>(use `brmsformula()` or `bf()`)
+
+<!-- * Use 4 parallel chains, each with 5,000 iterations (2,500 warmup draws) -->
+
+```{r}
+#| echo: true
+#| attr-output: "style='font-size: 0.67em;'"
+library(brms)
+snap_timing_brm <- brm(
+  brmsformula(
+    # mean level
+    frame_between ~ 
+      factor(down) + play_clock_at_motion + factor(posteam_timeouts_remaining) + 
+      position + n_motion_since_line_set + factor(motion_cluster) + 
+      (1 | passer_player_id) + (1 | nflId) + (1 | defensiveTeam),
+    # shape level
+    shape ~ (1 | passer_player_id)
+  ),
+  family = Gamma(link = "log"),
+  data = plays_snap_timing,
+  iter = 5000,
+  warmup = 2500,
+  chains = 4,
+  seed = 3,
+  cores = 4,
+  backend = "cmdstanr"
+)
+```
+
+## Model diagnostics
+
+::: columns
+
+::: {.column width="40%" style="text-align: left;"}
+
+```{r}
+#| echo: true
+#| fig-width: 6
+#| fig-align: "center"
+# view trace plots
+# mcmc_plot(snap_timing_brm, type = "trace")
+# summary(rhat(snap_timing_brm))
+hist(rhat(snap_timing_brm))
+```
+
+:::
+
+::: {.column width="60%" style="text-align: left;"}
+
+```{r}
+#| echo: true
+#| fig-width: 6
+#| fig-align: "center"
+# summary(neff_ratio(snap_timing_brm))
+hist(neff_ratio(snap_timing_brm))
+```
+
+:::
+:::
+
+
+## Model summary
+
+```{r}
+#| echo: true
+#| code-fold: false
+#| attr-output: "style='font-size: 0.75em;'"
+print(snap_timing_brm, digits = 3, priors = TRUE)
+```
+
+:::aside
+To manually set priors, use the function [`set_prior()`](https://paulbuerkner.com/brms/reference/set_prior.html)
+:::
+
+## Posterior samples for all model parameters
+
+```{r}
+#| echo: true
+#| code-fold: false
+#| attr-output: "style='font-size: 0.67em;'" 
+posterior_samples <- as_tibble(snap_timing_brm)
+# names(posterior_samples) # view all parameter names
+posterior_samples
+```
+
+## Posterior distributions of sd parameters
+
+```{r}
+#| echo: true
+#| code-fold: false
+posterior_samples |> 
+  select(contains("sd_")) # only get sd parameters
+```
+
+<!-- ## `tidybayes` -->
+
+<!-- ```{r} -->
+<!-- #| echo: true -->
+<!-- #| attr-output: "style='font-size: 0.75em;'" -->
+<!-- library(tidybayes) -->
+<!-- # get_variables(snap_timing_brm) -->
+<!-- sd_posteriors <- snap_timing_brm |>  -->
+<!--   gather_draws(sd_defensiveTeam__Intercept, -->
+<!--                sd_nflId__Intercept, -->
+<!--                sd_passer_player_id__Intercept, -->
+<!--                sd_passer_player_id__shape_Intercept) |>  -->
+<!--   mutate(.variable = str_remove(.variable, "__Intercept|_Intercept")) -->
+
+<!-- sd_posteriors -->
+<!-- ``` -->
+
+## Posterior distributions of sd parameters
+
+```{r}
+#| echo: true
+#| fig-width: 6
+#| fig-align: "center"
+sd_posteriors <- posterior_samples |> 
+  select(contains("sd_")) |> 
+  pivot_longer(everything(), 
+               names_to = "term", 
+               values_to = "estimate") |> 
+  # remove annoying text in these parameter names
+  mutate(term = str_remove(term, "__Intercept|_Intercept"))
+
+sd_posteriors |>   
+  ggplot(aes(estimate, color = term)) +
+  geom_density(linewidth = 1.4) +
+  labs(x = "Estimate",
+       color = NULL) +
+  scale_color_manual(values = c("darkblue", "maroon", "darkorange", "black")) +
+  theme(legend.position = "bottom") +
+  guides(color = guide_legend(nrow = 2))
+```
+
+## Largest source of variation is between QBs when modeling the snap timing shape
+
+```{r}
+#| echo: true
+sd_posteriors |> 
+  group_by(term) |> 
+  summarize(posterior_mean = mean(estimate),
+            posterior_sd = sd(estimate),
+            lower_95_ci = quantile(estimate, 0.025),
+            upper_95_ci = quantile(estimate, 0.975))
+```
+
+## Posterior distributions of $u_q$
+
+```{r}
+#| echo: true
+#| code-fold: false
+#| attr-output: "style='font-size: 0.67em;'"
+posterior_samples |> 
+  select(contains("r_passer_player_id__shape"))
+```
+
+## Higher posterior mean corresponds to greater snap timing variability
+
+```{r}
+#| echo: true
+#| fig-width: 6
+#| fig-height: 7
+#| fig-align: "center"
+# only keep QB with at least 50 pass attempts for analysis
+qb_filtered <- plays_snap_timing |> 
+  distinct(gameId, playId, passer_player_id, passer_player_name) |> 
+  count(passer_player_id, passer_player_name) |>
+  filter(n >= 50)
+
+qb_shape_estimates <- posterior_samples |> 
+  select(contains("r_passer_player_id__shape")) |>
+  pivot_longer(everything(), names_to = "passer_player_id", values_to = "estimate") |>  
+  # clean up id column
+  mutate(passer_player_id = str_remove_all(passer_player_id, 
+                                           "r_passer_player_id__shape\\[|,Intercept\\]")) |> 
+  filter(passer_player_id %in% qb_filtered$passer_player_id) |> 
+  # get player names
+  left_join(distinct(plays_snap_timing, passer_player_name, passer_player_id)) |> 
+  # order players by posterior mean
+  mutate(passer_player_name = fct_reorder(passer_player_name, estimate, .fun = mean))
+
+library(ggridges)
+qb_shape_estimates |> 
+  ggplot(aes(estimate, passer_player_name)) +
+  geom_density_ridges(fill = "lightgray", rel_min_height = 0.01,
+                      quantile_lines = TRUE, quantile_fun = mean) +
+  labs(x = "QB shape random effect", 
+       y = NULL)
+```
+
+## Bonus: visualizing distributions with `ggdist`
+
+```{r}
+#| echo: true
+#| fig-width: 6
+#| fig-align: "center"
+library(ggdist)
+qb_shape_estimates |> 
+  ggplot(aes(estimate, passer_player_name)) +
+  stat_slab(alpha = 0.4, scale = 0.95) +
+  stat_interval(alpha = 0.7) +
+  stat_summary(geom = "point", fun = mean, size = 0.8) +
+  scale_color_manual(values = MetBrewer::met.brewer("VanGogh3"),
+                     labels = c("95%", "80%", "50%")) +
+  labs(x = "QB shape random effect", y = NULL, color = "Credible interval") +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank())
+```
+
+## Higher snap timing variability is related to facing less havoc created by the defense
+
+<br>
+
+![](https://raw.githubusercontent.com/qntkhvn/timing/refs/heads/main/figures/corr_havoc_paper.png)
+
+## Summary
+
+* We can explicitly model the variance of a response variable
+
+* `brms` makes it easy for fitting Bayesian (multilevel) models
+
+* Paper: [`arxiv.org/pdf/2502.16313`](https://arxiv.org/pdf/2502.16313)
+
+* Code: [`github.com/qntkhvn/timing`](https://github.com/qntkhvn/timing/tree/main/scripts)
+
+> For some reason that I cannot explain, I am fascinated by variability.  No, actually I can explain this: I'm a statistician. --- DMA
+
+
+<!-- # Appendix -->
+
+<!-- ## Revisiting NFL completion probability example -->
+
+<!-- $$ -->
+<!-- \small -->
+<!-- \begin{aligned} -->
+<!-- y_{qdri} &\sim \textsf{Bernoulli}(p_{qdri})\\ -->
+<!-- \log \left(\frac{p_{qdri}}{1 - p_{qdri}}\right) &= \alpha_0 + \beta_0 \times \textsf{air_yards}_{qdri} + u_q + v_d + w_r\\ -->
+<!-- u_q &\sim \textsf{Normal}(0, \sigma^2_u)\\ -->
+<!-- v_d &\sim \textsf{Normal}(0, \sigma^2_v)\\ -->
+<!-- w_r &\sim \textsf{Normal}(0, \sigma^2_w)\\ -->
+<!-- \end{aligned} -->
+<!-- $$ -->
+
+
+<!-- ## Revisiting NFL passing example -->
+
+<!-- a -->
+
+<!-- ## Uncertainty quantification with posterior distributions -->
+
+<!-- * Recall that with a frequentist approach (using `lme4`), we quantify the uncertainty of the random effect estimates using the bootstrap -->
+
+<!--   * Preserve dependence structure in the data -->
+
+<!-- * With a Bayesian approach, it naturally provides uncertainty quantification for all parameters of interest via their posterior distributions -->
+
+
+<!-- ## Uncertainty quantification with posterior distributions -->
+
+<!-- ```{r} -->
+<!-- library(brms) -->
+<!-- nfl_passing_brm <- read_rds("nfl_passing_brm.rds") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: true -->
+<!-- library(tidybayes) -->
+<!-- # get_variables(nfl_passing_brm) -->
+<!-- receiver_posterior <- nfl_passing_brm |> -->
+<!--   spread_draws(r_receiver_name_id[receiver_name_id, term]) -->
+
+<!-- top_receivers <- receiver_posterior |>  -->
+<!--   group_by(receiver_name_id) |>  -->
+<!--   summarize(mean_intercept = mean(r_receiver_name_id), .groups = "drop") |>  -->
+<!--   arrange(-mean_intercept) |>  -->
+<!--   slice_head(n = 10) -->
+<!-- ``` -->
+
+<!-- ## Uncertainty quantification -->
+
+<!-- ```{r} -->
+<!-- #| echo: true -->
+<!-- #| fig-width: 8 -->
+<!-- #| fig-align: "center" -->
+<!-- library(ggridges) -->
+<!-- receiver_posterior |>  -->
+<!--   filter(receiver_name_id %in% top_receivers$receiver_name_id) |>  -->
+<!--   mutate(receiver_name_id = factor(receiver_name_id,  -->
+<!--                                    levels = rev(top_receivers$receiver_name_id))) |>  -->
+<!--   ggplot(aes(r_receiver_name_id, receiver_name_id)) + -->
+<!--   geom_density_ridges(quantile_lines = TRUE, quantiles = 0.5, rel_min_height = 0.01) + -->
+<!--   labs(x = "Receiver random effect", y = NULL) -->
+<!-- ``` -->
