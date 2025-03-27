@@ -275,7 +275,7 @@ window.Quarto = {
 <p>As discussed in lecture, we’ll start with the traditional <code>lme4</code> multilevel model that we’ve discussed earlier in the semester:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>glmer_goal_model <span class="ot">&lt;-</span> <span class="fu">glmer</span>(goals <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>glmer_goal_model <span class="ot">&lt;-</span> <span class="fu">glmer</span>(goals <span class="sc">~</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">family =</span> poisson,</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                               <span class="at">data =</span> eng_match_goals_scored)</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(glmer_goal_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -283,27 +283,32 @@ window.Quarto = {
 <pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
   Approximation) [glmerMod]
  Family: poisson  ( log )
-Formula: goals ~ 0 + is_home + (1 | off_team) + (1 | def_team)
+Formula: goals ~ is_home + (1 | off_team) + (1 | def_team)
    Data: eng_match_goals_scored
 
      AIC      BIC   logLik deviance df.resid 
-  2386.6   2400.5  -1190.3   2380.6      757 
+  2376.2   2394.8  -1184.1   2368.2      756 
 
 Scaled residuals: 
-     Min       1Q   Median       3Q      Max 
--1.69427 -0.68131 -0.09881  0.60867  3.12444 
+    Min      1Q  Median      3Q     Max 
+-1.6616 -0.6872 -0.1526  0.5728  3.1149 
 
 Random effects:
  Groups   Name        Variance Std.Dev.
- off_team (Intercept) 0.08959  0.2993  
- def_team (Intercept) 0.08241  0.2871  
+ off_team (Intercept) 0.05783  0.2405  
+ def_team (Intercept) 0.05268  0.2295  
 Number of obs: 760, groups:  off_team, 20; def_team, 20
 
 Fixed effects:
-        Estimate Std. Error z value Pr(&gt;|z|)    
-is_home  0.25349    0.05621    4.51 6.48e-06 ***
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  0.33650    0.08597   3.914 9.06e-05 ***
+is_home      0.19645    0.05664   3.469 0.000523 ***
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+        (Intr)
+is_home -0.362</code></pre>
 </div>
 </div>
 <p>We could proceed to use this model in the format we discussed earlier in the semester… however that fails to propagate the uncertainty we have about the parameters. Instead we can fit the fully Bayesian version of this model with relative ease.</p>
@@ -337,15 +342,15 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div class="cell-output cell-output-stderr">
 <pre><code>  options(mc.cores = parallel::detectCores())</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>team_goals_model <span class="ot">&lt;-</span> <span class="fu">stan_glmer</span>(goals <span class="sc">~</span> <span class="dv">0</span> <span class="sc">+</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>team_goals_model <span class="ot">&lt;-</span> <span class="fu">stan_glmer</span>(goals <span class="sc">~</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                               <span class="at">family =</span> poisson,</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">data =</span> eng_match_goals_scored, <span class="at">seed =</span> <span class="dv">2013</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 SAMPLING FOR MODEL 'count' NOW (CHAIN 1).
 Chain 1: 
-Chain 1: Gradient evaluation took 8.2e-05 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.82 seconds.
+Chain 1: Gradient evaluation took 0.000255 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.55 seconds.
 Chain 1: Adjust your expectations accordingly!
 Chain 1: 
 Chain 1: 
@@ -362,15 +367,15 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 1.754 seconds (Warm-up)
-Chain 1:                0.96 seconds (Sampling)
-Chain 1:                2.714 seconds (Total)
+Chain 1:  Elapsed Time: 1.453 seconds (Warm-up)
+Chain 1:                0.726 seconds (Sampling)
+Chain 1:                2.179 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 4.7e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.47 seconds.
+Chain 2: Gradient evaluation took 4.1e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.41 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -387,9 +392,9 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 1.503 seconds (Warm-up)
-Chain 2:                0.802 seconds (Sampling)
-Chain 2:                2.305 seconds (Total)
+Chain 2:  Elapsed Time: 1.415 seconds (Warm-up)
+Chain 2:                0.735 seconds (Sampling)
+Chain 2:                2.15 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 3).
@@ -412,15 +417,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 1.786 seconds (Warm-up)
-Chain 3:                0.694 seconds (Sampling)
-Chain 3:                2.48 seconds (Total)
+Chain 3:  Elapsed Time: 1.28 seconds (Warm-up)
+Chain 3:                0.642 seconds (Sampling)
+Chain 3:                1.922 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 4.2e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
+Chain 4: Gradient evaluation took 3.9e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.39 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -437,9 +442,9 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 1.669 seconds (Warm-up)
-Chain 4:                0.901 seconds (Sampling)
-Chain 4:                2.57 seconds (Total)
+Chain 4:  Elapsed Time: 1.778 seconds (Warm-up)
+Chain 4:                0.789 seconds (Sampling)
+Chain 4:                2.567 seconds (Total)
 Chain 4: </code></pre>
 </div>
 </div>
@@ -452,7 +457,7 @@ Chain 4: </code></pre>
 Model Info:
  function:     stan_glmer
  family:       poisson [log]
- formula:      goals ~ 0 + is_home + (1 | off_team) + (1 | def_team)
+ formula:      goals ~ is_home + (1 | off_team) + (1 | def_team)
  algorithm:    sampling
  sample:       4000 (posterior sample size)
  priors:       see help('prior_summary')
@@ -461,103 +466,105 @@ Model Info:
 
 Estimates:
                                           mean   sd   10%   50%   90%
-is_home                                  0.2    0.1  0.2   0.3   0.3 
-b[(Intercept) off_team:Arsenal]          0.5    0.1  0.3   0.5   0.7 
-b[(Intercept) off_team:Aston_Villa]      0.3    0.1  0.2   0.3   0.5 
-b[(Intercept) off_team:Bournemouth]      0.0    0.1 -0.1   0.0   0.2 
-b[(Intercept) off_team:Brentford]        0.1    0.1 -0.1   0.1   0.2 
-b[(Intercept) off_team:Brighton]         0.1    0.1 -0.1   0.1   0.2 
-b[(Intercept) off_team:Burnley]         -0.2    0.1 -0.4  -0.2   0.0 
-b[(Intercept) off_team:Chelsea]          0.4    0.1  0.2   0.4   0.5 
-b[(Intercept) off_team:Crystal_Palace]   0.1    0.1 -0.1   0.1   0.3 
-b[(Intercept) off_team:Everton]         -0.2    0.1 -0.4  -0.2   0.0 
-b[(Intercept) off_team:Fulham]           0.1    0.1 -0.1   0.1   0.2 
-b[(Intercept) off_team:Liverpool]        0.4    0.1  0.3   0.4   0.6 
-b[(Intercept) off_team:Luton_Town]       0.0    0.1 -0.2   0.0   0.2 
-b[(Intercept) off_team:Manchester_City]  0.5    0.1  0.4   0.5   0.7 
-b[(Intercept) off_team:Manchester_Utd]   0.1    0.1 -0.1   0.1   0.3 
-b[(Intercept) off_team:Newcastle_Utd]    0.4    0.1  0.3   0.4   0.6 
-b[(Intercept) off_team:Nott'ham_Forest]  0.0    0.1 -0.2   0.0   0.2 
-b[(Intercept) off_team:Sheffield_Utd]   -0.3    0.2 -0.5  -0.3  -0.1 
-b[(Intercept) off_team:Tottenham]        0.3    0.1  0.1   0.3   0.5 
-b[(Intercept) off_team:West_Ham]         0.1    0.1  0.0   0.1   0.3 
-b[(Intercept) off_team:Wolves]           0.0    0.1 -0.2   0.0   0.2 
-b[(Intercept) def_team:Arsenal]         -0.4    0.2 -0.6  -0.4  -0.2 
-b[(Intercept) def_team:Aston_Villa]      0.1    0.1  0.0   0.1   0.3 
-b[(Intercept) def_team:Bournemouth]      0.2    0.1  0.0   0.2   0.4 
-b[(Intercept) def_team:Brentford]        0.2    0.1  0.0   0.2   0.4 
-b[(Intercept) def_team:Brighton]         0.1    0.1  0.0   0.1   0.3 
-b[(Intercept) def_team:Burnley]          0.3    0.1  0.2   0.3   0.5 
-b[(Intercept) def_team:Chelsea]          0.2    0.1  0.0   0.2   0.3 
-b[(Intercept) def_team:Crystal_Palace]   0.1    0.1 -0.1   0.1   0.3 
-b[(Intercept) def_team:Everton]          0.0    0.1 -0.2   0.0   0.1 
-b[(Intercept) def_team:Fulham]           0.1    0.1  0.0   0.1   0.3 
-b[(Intercept) def_team:Liverpool]       -0.2    0.1 -0.4  -0.2   0.0 
-b[(Intercept) def_team:Luton_Town]       0.4    0.1  0.3   0.4   0.6 
-b[(Intercept) def_team:Manchester_City] -0.3    0.2 -0.5  -0.3  -0.1 
-b[(Intercept) def_team:Manchester_Utd]   0.1    0.1 -0.1   0.1   0.3 
-b[(Intercept) def_team:Newcastle_Utd]    0.2    0.1  0.0   0.2   0.3 
-b[(Intercept) def_team:Nott'ham_Forest]  0.2    0.1  0.0   0.2   0.4 
-b[(Intercept) def_team:Sheffield_Utd]    0.6    0.1  0.4   0.6   0.8 
-b[(Intercept) def_team:Tottenham]        0.1    0.1  0.0   0.1   0.3 
-b[(Intercept) def_team:West_Ham]         0.3    0.1  0.1   0.3   0.5 
-b[(Intercept) def_team:Wolves]           0.2    0.1  0.0   0.2   0.4 
-Sigma[off_team:(Intercept),(Intercept)]  0.1    0.1  0.1   0.1   0.2 
-Sigma[def_team:(Intercept),(Intercept)]  0.1    0.1  0.0   0.1   0.2 
+(Intercept)                              0.3    0.1  0.2   0.3   0.5 
+is_home                                  0.2    0.1  0.1   0.2   0.3 
+b[(Intercept) off_team:Arsenal]          0.3    0.1  0.2   0.3   0.5 
+b[(Intercept) off_team:Aston_Villa]      0.2    0.1  0.0   0.2   0.3 
+b[(Intercept) off_team:Bournemouth]     -0.1    0.1 -0.3  -0.1   0.1 
+b[(Intercept) off_team:Brentford]       -0.1    0.1 -0.2  -0.1   0.1 
+b[(Intercept) off_team:Brighton]        -0.1    0.1 -0.2  -0.1   0.1 
+b[(Intercept) off_team:Burnley]         -0.3    0.1 -0.5  -0.3  -0.1 
+b[(Intercept) off_team:Chelsea]          0.2    0.1  0.0   0.2   0.4 
+b[(Intercept) off_team:Crystal_Palace]  -0.1    0.1 -0.2  -0.1   0.1 
+b[(Intercept) off_team:Everton]         -0.3    0.1 -0.5  -0.3  -0.1 
+b[(Intercept) off_team:Fulham]          -0.1    0.1 -0.2  -0.1   0.1 
+b[(Intercept) off_team:Liverpool]        0.3    0.1  0.1   0.3   0.4 
+b[(Intercept) off_team:Luton_Town]      -0.1    0.1 -0.3  -0.1   0.1 
+b[(Intercept) off_team:Manchester_City]  0.4    0.1  0.2   0.4   0.5 
+b[(Intercept) off_team:Manchester_Utd]  -0.1    0.1 -0.2  -0.1   0.1 
+b[(Intercept) off_team:Newcastle_Utd]    0.3    0.1  0.1   0.3   0.4 
+b[(Intercept) off_team:Nott'ham_Forest] -0.2    0.1 -0.3  -0.2   0.0 
+b[(Intercept) off_team:Sheffield_Utd]   -0.4    0.2 -0.6  -0.4  -0.2 
+b[(Intercept) off_team:Tottenham]        0.2    0.1  0.0   0.2   0.3 
+b[(Intercept) off_team:West_Ham]         0.0    0.1 -0.2   0.0   0.2 
+b[(Intercept) off_team:Wolves]          -0.1    0.1 -0.3  -0.1   0.0 
+b[(Intercept) def_team:Arsenal]         -0.5    0.2 -0.7  -0.5  -0.3 
+b[(Intercept) def_team:Aston_Villa]      0.0    0.1 -0.2   0.0   0.2 
+b[(Intercept) def_team:Bournemouth]      0.1    0.1 -0.1   0.1   0.2 
+b[(Intercept) def_team:Brentford]        0.0    0.1 -0.1   0.0   0.2 
+b[(Intercept) def_team:Brighton]         0.0    0.1 -0.1   0.0   0.2 
+b[(Intercept) def_team:Burnley]          0.2    0.1  0.0   0.2   0.3 
+b[(Intercept) def_team:Chelsea]          0.0    0.1 -0.1   0.0   0.2 
+b[(Intercept) def_team:Crystal_Palace]   0.0    0.1 -0.2   0.0   0.1 
+b[(Intercept) def_team:Everton]         -0.1    0.1 -0.3  -0.1   0.0 
+b[(Intercept) def_team:Fulham]           0.0    0.1 -0.2   0.0   0.2 
+b[(Intercept) def_team:Liverpool]       -0.3    0.1 -0.5  -0.3  -0.1 
+b[(Intercept) def_team:Luton_Town]       0.3    0.1  0.1   0.3   0.4 
+b[(Intercept) def_team:Manchester_City] -0.4    0.1 -0.6  -0.4  -0.2 
+b[(Intercept) def_team:Manchester_Utd]   0.0    0.1 -0.2   0.0   0.1 
+b[(Intercept) def_team:Newcastle_Utd]    0.0    0.1 -0.1   0.0   0.2 
+b[(Intercept) def_team:Nott'ham_Forest]  0.1    0.1 -0.1   0.1   0.2 
+b[(Intercept) def_team:Sheffield_Utd]    0.4    0.1  0.3   0.4   0.6 
+b[(Intercept) def_team:Tottenham]        0.0    0.1 -0.2   0.0   0.2 
+b[(Intercept) def_team:West_Ham]         0.2    0.1  0.0   0.1   0.3 
+b[(Intercept) def_team:Wolves]           0.0    0.1 -0.1   0.0   0.2 
+Sigma[off_team:(Intercept),(Intercept)]  0.1    0.0  0.0   0.1   0.1 
+Sigma[def_team:(Intercept),(Intercept)]  0.1    0.0  0.0   0.1   0.1 
 
 Fit Diagnostics:
            mean   sd   10%   50%   90%
-mean_PPD 1.6    0.1  1.5   1.6   1.7  
+mean_PPD 1.6    0.1  1.6   1.6   1.7  
 
 The mean_ppd is the sample average posterior predictive distribution of the outcome variable (for details see help('summary.stanreg')).
 
 MCMC diagnostics
                                         mcse Rhat n_eff
-is_home                                 0.0  1.0  3727 
-b[(Intercept) off_team:Arsenal]         0.0  1.0  1188 
-b[(Intercept) off_team:Aston_Villa]     0.0  1.0  1353 
-b[(Intercept) off_team:Bournemouth]     0.0  1.0  1497 
-b[(Intercept) off_team:Brentford]       0.0  1.0  1909 
-b[(Intercept) off_team:Brighton]        0.0  1.0  1725 
-b[(Intercept) off_team:Burnley]         0.0  1.0  2531 
-b[(Intercept) off_team:Chelsea]         0.0  1.0  1211 
-b[(Intercept) off_team:Crystal_Palace]  0.0  1.0  1698 
-b[(Intercept) off_team:Everton]         0.0  1.0  2546 
-b[(Intercept) off_team:Fulham]          0.0  1.0  1797 
-b[(Intercept) off_team:Liverpool]       0.0  1.0  1180 
-b[(Intercept) off_team:Luton_Town]      0.0  1.0  2004 
-b[(Intercept) off_team:Manchester_City] 0.0  1.0  1101 
-b[(Intercept) off_team:Manchester_Utd]  0.0  1.0  1604 
-b[(Intercept) off_team:Newcastle_Utd]   0.0  1.0  1125 
-b[(Intercept) off_team:Nott'ham_Forest] 0.0  1.0  1938 
-b[(Intercept) off_team:Sheffield_Utd]   0.0  1.0  3405 
-b[(Intercept) off_team:Tottenham]       0.0  1.0  1223 
-b[(Intercept) off_team:West_Ham]        0.0  1.0  1466 
-b[(Intercept) off_team:Wolves]          0.0  1.0  1929 
-b[(Intercept) def_team:Arsenal]         0.0  1.0  3751 
-b[(Intercept) def_team:Aston_Villa]     0.0  1.0  1420 
-b[(Intercept) def_team:Bournemouth]     0.0  1.0  1354 
-b[(Intercept) def_team:Brentford]       0.0  1.0  1319 
-b[(Intercept) def_team:Brighton]        0.0  1.0  1561 
-b[(Intercept) def_team:Burnley]         0.0  1.0  1228 
-b[(Intercept) def_team:Chelsea]         0.0  1.0  1427 
-b[(Intercept) def_team:Crystal_Palace]  0.0  1.0  1431 
-b[(Intercept) def_team:Everton]         0.0  1.0  1761 
-b[(Intercept) def_team:Fulham]          0.0  1.0  1363 
-b[(Intercept) def_team:Liverpool]       0.0  1.0  2764 
-b[(Intercept) def_team:Luton_Town]      0.0  1.0  1119 
-b[(Intercept) def_team:Manchester_City] 0.0  1.0  3401 
-b[(Intercept) def_team:Manchester_Utd]  0.0  1.0  1509 
-b[(Intercept) def_team:Newcastle_Utd]   0.0  1.0  1550 
-b[(Intercept) def_team:Nott'ham_Forest] 0.0  1.0  1512 
-b[(Intercept) def_team:Sheffield_Utd]   0.0  1.0  1069 
-b[(Intercept) def_team:Tottenham]       0.0  1.0  1483 
-b[(Intercept) def_team:West_Ham]        0.0  1.0  1356 
-b[(Intercept) def_team:Wolves]          0.0  1.0  1330 
-Sigma[off_team:(Intercept),(Intercept)] 0.0  1.0   741 
-Sigma[def_team:(Intercept),(Intercept)] 0.0  1.0   714 
-mean_PPD                                0.0  1.0  3991 
-log-posterior                           0.2  1.0   836 
+(Intercept)                             0.0  1.0  1021 
+is_home                                 0.0  1.0  5257 
+b[(Intercept) off_team:Arsenal]         0.0  1.0  2461 
+b[(Intercept) off_team:Aston_Villa]     0.0  1.0  2485 
+b[(Intercept) off_team:Bournemouth]     0.0  1.0  2699 
+b[(Intercept) off_team:Brentford]       0.0  1.0  2892 
+b[(Intercept) off_team:Brighton]        0.0  1.0  2850 
+b[(Intercept) off_team:Burnley]         0.0  1.0  3235 
+b[(Intercept) off_team:Chelsea]         0.0  1.0  2835 
+b[(Intercept) off_team:Crystal_Palace]  0.0  1.0  2866 
+b[(Intercept) off_team:Everton]         0.0  1.0  3113 
+b[(Intercept) off_team:Fulham]          0.0  1.0  2579 
+b[(Intercept) off_team:Liverpool]       0.0  1.0  2908 
+b[(Intercept) off_team:Luton_Town]      0.0  1.0  2842 
+b[(Intercept) off_team:Manchester_City] 0.0  1.0  2805 
+b[(Intercept) off_team:Manchester_Utd]  0.0  1.0  2907 
+b[(Intercept) off_team:Newcastle_Utd]   0.0  1.0  2255 
+b[(Intercept) off_team:Nott'ham_Forest] 0.0  1.0  2915 
+b[(Intercept) off_team:Sheffield_Utd]   0.0  1.0  3123 
+b[(Intercept) off_team:Tottenham]       0.0  1.0  2321 
+b[(Intercept) off_team:West_Ham]        0.0  1.0  2791 
+b[(Intercept) off_team:Wolves]          0.0  1.0  2779 
+b[(Intercept) def_team:Arsenal]         0.0  1.0  3324 
+b[(Intercept) def_team:Aston_Villa]     0.0  1.0  2557 
+b[(Intercept) def_team:Bournemouth]     0.0  1.0  2744 
+b[(Intercept) def_team:Brentford]       0.0  1.0  2530 
+b[(Intercept) def_team:Brighton]        0.0  1.0  2466 
+b[(Intercept) def_team:Burnley]         0.0  1.0  2517 
+b[(Intercept) def_team:Chelsea]         0.0  1.0  2494 
+b[(Intercept) def_team:Crystal_Palace]  0.0  1.0  2900 
+b[(Intercept) def_team:Everton]         0.0  1.0  2924 
+b[(Intercept) def_team:Fulham]          0.0  1.0  2755 
+b[(Intercept) def_team:Liverpool]       0.0  1.0  3181 
+b[(Intercept) def_team:Luton_Town]      0.0  1.0  2538 
+b[(Intercept) def_team:Manchester_City] 0.0  1.0  3075 
+b[(Intercept) def_team:Manchester_Utd]  0.0  1.0  3105 
+b[(Intercept) def_team:Newcastle_Utd]   0.0  1.0  2924 
+b[(Intercept) def_team:Nott'ham_Forest] 0.0  1.0  2883 
+b[(Intercept) def_team:Sheffield_Utd]   0.0  1.0  2489 
+b[(Intercept) def_team:Tottenham]       0.0  1.0  2784 
+b[(Intercept) def_team:West_Ham]        0.0  1.0  2762 
+b[(Intercept) def_team:Wolves]          0.0  1.0  2591 
+Sigma[off_team:(Intercept),(Intercept)] 0.0  1.0  1337 
+Sigma[def_team:(Intercept),(Intercept)] 0.0  1.0  1087 
+mean_PPD                                0.0  1.0  3910 
+log-posterior                           0.2  1.0   937 
 
 For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure of effective sample size, and Rhat is the potential scale reduction factor on split chains (at convergence Rhat=1).</code></pre>
 </div>
@@ -568,16 +575,17 @@ For each parameter, mcse is Monte Carlo standard error, n_eff is a crude measure
 <div class="cell-output cell-output-stdout">
 <pre><code>stan_glmer
  family:       poisson [log]
- formula:      goals ~ 0 + is_home + (1 | off_team) + (1 | def_team)
+ formula:      goals ~ is_home + (1 | off_team) + (1 | def_team)
  observations: 760
 ------
-        Median MAD_SD
-is_home 0.2505 0.0581
+            Median MAD_SD
+(Intercept) 0.3356 0.0882
+is_home     0.1963 0.0574
 
 Error terms:
  Groups   Name        Std.Dev.
- off_team (Intercept) 0.32554 
- def_team (Intercept) 0.31534 
+ off_team (Intercept) 0.26685 
+ def_team (Intercept) 0.25594 
 Num. levels: off_team 20, def_team 20 
 
 ------
@@ -590,24 +598,24 @@ Num. levels: off_team 20, def_team 20
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>posterior_sample <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(team_goals_model) <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>posterior_sample</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4,000 × 43
-   is_home b[(Intercept) off_tea…¹ b[(Intercept) off_te…² b[(Intercept) off_te…³
-     &lt;dbl&gt;                   &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;
- 1   0.222                   0.521                  0.412                -0.0670
- 2   0.255                   0.347                  0.281                 0.200 
- 3   0.285                   0.575                  0.321                -0.206 
- 4   0.364                   0.533                  0.240                 0.194 
- 5   0.354                   0.475                  0.345                -0.198 
- 6   0.390                   0.388                  0.277                -0.0949
- 7   0.189                   0.712                  0.471                 0.174 
- 8   0.298                   0.615                  0.493                 0.130 
- 9   0.244                   0.557                  0.238                 0.0133
-10   0.207                   0.567                  0.407                -0.0625
+<pre><code># A tibble: 4,000 × 44
+   `(Intercept)` is_home b[(Intercept) off_team:Arsenal…¹ b[(Intercept) off_te…²
+           &lt;dbl&gt;   &lt;dbl&gt;                            &lt;dbl&gt;                  &lt;dbl&gt;
+ 1         0.335   0.180                            0.233                 0.207 
+ 2         0.288   0.287                            0.366                -0.0537
+ 3         0.226   0.271                            0.359                 0.250 
+ 4         0.454   0.123                            0.343                 0.173 
+ 5         0.394   0.164                            0.327                 0.176 
+ 6         0.469   0.157                            0.185                 0.232 
+ 7         0.474   0.204                            0.256                 0.274 
+ 8         0.449   0.225                            0.372                 0.137 
+ 9         0.468   0.209                            0.246                 0.0665
+10         0.531   0.189                            0.294                 0.116 
 # ℹ 3,990 more rows
 # ℹ abbreviated names: ¹​`b[(Intercept) off_team:Arsenal]`,
-#   ²​`b[(Intercept) off_team:Aston_Villa]`,
-#   ³​`b[(Intercept) off_team:Bournemouth]`
-# ℹ 39 more variables: `b[(Intercept) off_team:Brentford]` &lt;dbl&gt;,
+#   ²​`b[(Intercept) off_team:Aston_Villa]`
+# ℹ 40 more variables: `b[(Intercept) off_team:Bournemouth]` &lt;dbl&gt;,
+#   `b[(Intercept) off_team:Brentford]` &lt;dbl&gt;,
 #   `b[(Intercept) off_team:Brighton]` &lt;dbl&gt;,
 #   `b[(Intercept) off_team:Burnley]` &lt;dbl&gt;, …</code></pre>
 </div>
@@ -670,52 +678,53 @@ Num. levels: off_team 20, def_team 20
 <p>In order to predictions for this game, we will need to use the posterior distribution samples for these parameters of interest. Remember we have 4,000 samples quantifying the uncertainty about these parameters:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>chelsea_liverpool_samples <span class="ot">&lt;-</span> posterior_sample <span class="sc">|&gt;</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="st">`</span><span class="at">is_home</span><span class="st">`</span>, <span class="st">`</span><span class="at">b[(Intercept) off_team:Chelsea]</span><span class="st">`</span>,</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="st">`</span><span class="at">(Intercept)</span><span class="st">`</span>, <span class="st">`</span><span class="at">is_home</span><span class="st">`</span>, <span class="st">`</span><span class="at">b[(Intercept) off_team:Chelsea]</span><span class="st">`</span>,</span>
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>                <span class="st">`</span><span class="at">b[(Intercept) def_team:Liverpool]</span><span class="st">`</span>) <span class="sc">|&gt;</span></span>
 <span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Clean up the column names for ease:</span></span>
 <span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>()</span>
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>chelsea_liverpool_samples</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4,000 × 3
-   is_home b_intercept_off_team_chelsea b_intercept_def_team_liverpool
-     &lt;dbl&gt;                        &lt;dbl&gt;                          &lt;dbl&gt;
- 1   0.222                        0.357                        0.122  
- 2   0.255                        0.283                       -0.218  
- 3   0.285                        0.335                       -0.161  
- 4   0.364                        0.312                       -0.344  
- 5   0.354                        0.268                        0.00368
- 6   0.390                        0.412                       -0.455  
- 7   0.189                        0.333                       -0.127  
- 8   0.298                        0.436                       -0.299  
- 9   0.244                        0.197                       -0.126  
-10   0.207                        0.488                        0.00332
+<pre><code># A tibble: 4,000 × 4
+   intercept is_home b_intercept_off_team_chelsea b_intercept_def_team_liverpool
+       &lt;dbl&gt;   &lt;dbl&gt;                        &lt;dbl&gt;                          &lt;dbl&gt;
+ 1     0.335   0.180                       0.306                          -0.314
+ 2     0.288   0.287                       0.140                          -0.189
+ 3     0.226   0.271                       0.0235                         -0.140
+ 4     0.454   0.123                       0.414                          -0.467
+ 5     0.394   0.164                       0.327                          -0.490
+ 6     0.469   0.157                       0.123                          -0.527
+ 7     0.474   0.204                       0.118                          -0.248
+ 8     0.449   0.225                       0.224                          -0.323
+ 9     0.468   0.209                       0.143                          -0.211
+10     0.531   0.189                       0.0737                         -0.415
 # ℹ 3,990 more rows</code></pre>
 </div>
 </div>
 <p>Remember, we can effectively do whatever we want with our parameters’ posterior distribution samples. This includes computing estimates for the usual type of predictions or estimates for the conditional expectation of the response given inputs. For the Poisson example, the linear model predictions are on the log-link scale, i.e., <span class="math inline">\(\log \lambda | X = X\beta\)</span>, so we could simply across the columns to generate a full distribution for the estimate of this conditional expectation and then exponentiate (or more generally transform using the inverse-link function) to get on the response scale. Then just like before with our parameters of interest, we can visualize and summarize this posterior distribution for the conditional expectation of goals scored by Chelsea at home against (as demonstrated in the code chunk below).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>chelsea_liverpool_samples <span class="ot">&lt;-</span> chelsea_liverpool_samples <span class="sc">|&gt;</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_pred =</span> is_home <span class="sc">+</span> b_intercept_off_team_chelsea <span class="sc">+</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_pred =</span> intercept <span class="sc">+</span> is_home <span class="sc">+</span> b_intercept_off_team_chelsea <span class="sc">+</span> </span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>           b_intercept_def_team_liverpool,</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">response_pred =</span> <span class="fu">exp</span>(log_pred))</span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>chelsea_liverpool_samples</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4,000 × 5
-   is_home b_intercept_off_team_…¹ b_intercept_def_team…² log_pred response_pred
-     &lt;dbl&gt;                   &lt;dbl&gt;                  &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;
- 1   0.222                   0.357                0.122      0.701          2.02
- 2   0.255                   0.283               -0.218      0.320          1.38
- 3   0.285                   0.335               -0.161      0.459          1.58
- 4   0.364                   0.312               -0.344      0.332          1.39
- 5   0.354                   0.268                0.00368    0.626          1.87
- 6   0.390                   0.412               -0.455      0.348          1.42
- 7   0.189                   0.333               -0.127      0.395          1.49
- 8   0.298                   0.436               -0.299      0.435          1.55
- 9   0.244                   0.197               -0.126      0.315          1.37
-10   0.207                   0.488                0.00332    0.698          2.01
+<pre><code># A tibble: 4,000 × 6
+   intercept is_home b_intercept_off_team_chel…¹ b_intercept_def_team…² log_pred
+       &lt;dbl&gt;   &lt;dbl&gt;                       &lt;dbl&gt;                  &lt;dbl&gt;    &lt;dbl&gt;
+ 1     0.335   0.180                      0.306                  -0.314    0.507
+ 2     0.288   0.287                      0.140                  -0.189    0.527
+ 3     0.226   0.271                      0.0235                 -0.140    0.381
+ 4     0.454   0.123                      0.414                  -0.467    0.524
+ 5     0.394   0.164                      0.327                  -0.490    0.394
+ 6     0.469   0.157                      0.123                  -0.527    0.222
+ 7     0.474   0.204                      0.118                  -0.248    0.547
+ 8     0.449   0.225                      0.224                  -0.323    0.575
+ 9     0.468   0.209                      0.143                  -0.211    0.609
+10     0.531   0.189                      0.0737                 -0.415    0.378
 # ℹ 3,990 more rows
 # ℹ abbreviated names: ¹​b_intercept_off_team_chelsea,
-#   ²​b_intercept_def_team_liverpool</code></pre>
+#   ²​b_intercept_def_team_liverpool
+# ℹ 1 more variable: response_pred &lt;dbl&gt;</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the distribution for Chelsea's predicted goals at home again Liverpool</span></span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>chelsea_liverpool_samples <span class="sc">|&gt;</span></span>
@@ -743,7 +752,7 @@ Num. levels: off_team 20, def_team 20
 <pre><code># A tibble: 1 × 4
   posterior_mean posterior_median lower_80 upper_80
            &lt;dbl&gt;            &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-1           1.57             1.55     1.23     1.93</code></pre>
+1           1.60             1.58     1.27     1.96</code></pre>
 </div>
 </div>
 <p>While the above is analogous to generating predictions with regression models in the usual sense, the quantified uncertainty only captures the <strong>epistemic uncertainty</strong> - the uncertainty over the model parameters that we hope to reduce to informative features and data. But, if we want to account for the <strong>aleatoric uncertainty</strong> - the uncertainty due to the randomness intrinsic to the problem that is not explained by observed variables - then the posterior distribution for the conditional expectation is insufficient! Instead, we also need to draw values from the assumed model generating the data. In this case, we are assuming the goals scored follows a Poisson distribution, i.e., goals scored <span class="math inline">\(\sim \text{Poisson}(\lambda)\)</span>. Since we have 4000 values for the estimated scoring rate <span class="math inline">\(\lambda\)</span>, we can then generate 4000 values for the predicted number of goals scored with effectively 4000 different distributions! If that sounds a bit wild to you, that’s because it is actually an appropriate way to propagate uncertainty through your regression model: we’re generating predictions that accounts for parameter-level uncertainty AND outcome-level uncertainty.</p>
@@ -784,22 +793,22 @@ Num. levels: off_team 20, def_team 20
 <pre><code># A tibble: 4,000 × 1
      `1`
    &lt;dbl&gt;
- 1 0.701
- 2 0.320
- 3 0.459
- 4 0.332
- 5 0.626
- 6 0.348
- 7 0.395
- 8 0.435
- 9 0.315
-10 0.698
+ 1 0.507
+ 2 0.527
+ 3 0.381
+ 4 0.524
+ 5 0.394
+ 6 0.222
+ 7 0.547
+ 8 0.575
+ 9 0.609
+10 0.378
 # ℹ 3,990 more rows</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Just display the first so many of the manually computed values:</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(chelsea_liverpool_samples<span class="sc">$</span>log_pred)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.7013738 0.3195892 0.4587797 0.3320028 0.6258529 0.3475069</code></pre>
+<pre><code>[1] 0.5065675 0.5268763 0.3810484 0.5239878 0.3944887 0.2215395</code></pre>
 </div>
 </div>
 <ul>
@@ -811,21 +820,21 @@ Num. levels: off_team 20, def_team 20
 <pre><code># A tibble: 4,000 × 1
      `1`
    &lt;dbl&gt;
- 1  2.02
- 2  1.38
- 3  1.58
- 4  1.39
- 5  1.87
- 6  1.42
- 7  1.49
- 8  1.55
- 9  1.37
-10  2.01
+ 1  1.66
+ 2  1.69
+ 3  1.46
+ 4  1.69
+ 5  1.48
+ 6  1.25
+ 7  1.73
+ 8  1.78
+ 9  1.84
+10  1.46
 # ℹ 3,990 more rows</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(chelsea_liverpool_samples<span class="sc">$</span>response_pred)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2.016521 1.376562 1.582142 1.393757 1.869840 1.415534</code></pre>
+<pre><code>[1] 1.659585 1.693634 1.463818 1.688749 1.483625 1.247996</code></pre>
 </div>
 </div>
 <ul>
@@ -838,16 +847,16 @@ Num. levels: off_team 20, def_team 20
 <pre><code># A tibble: 4,000 × 760
      `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`   `9`  `10`  `11`  `12`  `13`
    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
- 1 0.660  2.48 0.896 1.04   2.57  1.30  2.20  1.07  2.02  1.70  1.52  2.12  1.91
- 2 1.17   2.06 1.07  1.26   1.24  2.02  2.29  1.80  1.38  1.78  1.62  1.95  2.37
- 3 0.518  3.52 1.34  0.835  2.69  1.63  2.08  1.89  1.58  1.16  1.68  2.75  1.42
- 4 1.03   2.94 1.40  1.70   2.52  2.37  2.13  1.61  1.39  1.49  1.88  2.48  2.85
- 5 0.592  3.35 1.34  0.635  2.02  1.63  2.53  1.51  1.87  2.19  1.69  2.07  1.53
- 6 0.954  2.55 1.16  1.03   2.62  1.69  2.72  1.28  1.42  1.99  1.32  2.68  2.06
- 7 0.644  2.92 1.43  1.19   1.81  1.95  2.19  2.21  1.49  1.46  1.77  1.77  1.79
- 8 0.751  2.76 0.963 1.46   2.82  1.69  2.71  1.31  1.55  2.31  1.49  2.53  2.30
- 9 1.35   1.92 1.29  1.42   2.54  1.66  1.97  1.66  1.37  1.61  1.72  1.69  1.81
-10 1.11   1.94 1.14  1.40   2.25  1.37  2.33  1.38  2.01  1.37  1.48  2.44  1.60
+ 1 0.792  2.25  1.13 1.29   2.19  1.92  2.28  1.74  1.66  1.58  1.54  2.28  1.69
+ 2 1.14   2.83  1.11 1.06   2.25  1.40  2.14  2.27  1.69  1.86  1.53  2.53  1.60
+ 3 0.693  2.91  1.43 1.24   1.97  1.47  1.44  1.51  1.46  1.90  1.10  1.77  1.74
+ 4 1.07   2.17  1.13 0.868  2.02  2.10  3.18  1.59  1.69  1.55  2.31  2.64  2.04
+ 5 1.27   2.24  1.31 0.827  2.25  1.84  2.56  1.46  1.48  1.57  1.87  2.23  2.08
+ 6 0.623  2.02  1.75 1.09   1.48  1.76  2.17  1.58  1.25  1.91  2.37  1.78  1.99
+ 7 0.831  2.61  1.21 1.42   2.00  1.70  2.79  1.43  1.73  1.96  2.29  2.05  1.71
+ 8 0.907  2.87  1.65 1.22   2.30  1.80  1.84  1.56  1.78  1.92  1.95  2.72  1.45
+ 9 1.16   2.22  1.75 1.27   2.13  1.40  1.72  1.61  1.84  1.78  1.47  1.86  1.84
+10 0.859  2.12  1.52 1.16   2.57  1.36  1.79  1.62  1.46  1.94  1.84  1.59  2.59
 # ℹ 3,990 more rows
 # ℹ 747 more variables: `14` &lt;dbl&gt;, `15` &lt;dbl&gt;, `16` &lt;dbl&gt;, `17` &lt;dbl&gt;,
 #   `18` &lt;dbl&gt;, `19` &lt;dbl&gt;, `20` &lt;dbl&gt;, `21` &lt;dbl&gt;, `22` &lt;dbl&gt;, `23` &lt;dbl&gt;,
@@ -873,18 +882,18 @@ Num. levels: off_team 20, def_team 20
  1     2
  2     2
  3     1
- 4     1
+ 4     2
  5     4
- 6     1
+ 6     0
  7     2
  8     0
- 9     2
-10     2
+ 9     3
+10     1
 # ℹ 3,990 more rows</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(chelsea_liverpool_samples<span class="sc">$</span>goals_scored)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 2 2 1 1 4 1</code></pre>
+<pre><code>[1] 2 2 1 2 4 0</code></pre>
 </div>
 </div>
 <ul>
@@ -897,16 +906,16 @@ Num. levels: off_team 20, def_team 20
 <pre><code># A tibble: 4,000 × 760
      `1`   `2`   `3`   `4`   `5`   `6`   `7`   `8`   `9`  `10`  `11`  `12`  `13`
    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
- 1     0     4     2     0     3     1     2     2     4     0     4     1     2
- 2     2     1     2     0     1     3     2     2     4     0     2     0     3
- 3     0     6     0     3     3     0     3     1     2     5     3     1     2
- 4     0     2     0     1     2     5     0     3     1     1     1     1     3
- 5     2     7     1     1     1     3     4     0     1     4     1     1     4
- 6     1     1     1     1     1     2     4     1     1     0     1     4     3
- 7     2     4     3     2     1     2     0     2     0     0     2     3     2
- 8     1     4     1     0     5     2     1     3     0     1     2     4     1
- 9     0     4     1     1     6     3     2     3     1     4     1     2     2
-10     2     1     3     3     0     1     4     2     2     1     1     2     1
+ 1     0     4     2     0     2     2     2     3     3     0     4     2     2
+ 2     2     2     2     0     3     3     2     2     4     0     1     1     2
+ 3     0     5     0     4     2     0     2     0     1     6     2     0     2
+ 4     0     1     0     0     2     4     1     3     2     1     1     1     2
+ 5     3     5     1     1     2     3     4     0     0     3     1     2     5
+ 6     1     0     2     1     0     2     3     1     1     0     2     3     3
+ 7     3     4     3     2     1     2     0     1     1     1     2     4     2
+ 8     1     4     2     0     4     2     1     4     0     0     3     5     0
+ 9     0     4     1     1     6     3     2     3     2     4     0     2     2
+10     2     1     3     2     0     1     3     3     1     1     1     1     2
 # ℹ 3,990 more rows
 # ℹ 747 more variables: `14` &lt;int&gt;, `15` &lt;int&gt;, `16` &lt;int&gt;, `17` &lt;int&gt;,
 #   `18` &lt;int&gt;, `19` &lt;int&gt;, `20` &lt;int&gt;, `21` &lt;int&gt;, `22` &lt;int&gt;, `23` &lt;int&gt;,
@@ -940,6 +949,8 @@ Num. levels: off_team 20, def_team 20
 <div class="cell-output cell-output-stdout">
 <pre><code>Priors for model 'team_goals_model' 
 ------
+Intercept (after predictors centered)
+ ~ normal(location = 0, scale = 2.5)
 
 Coefficients
   Specified prior:
@@ -965,8 +976,8 @@ See help('prior_summary.stanreg') for more details</code></pre>
 <pre><code>
 SAMPLING FOR MODEL 'count' NOW (CHAIN 1).
 Chain 1: 
-Chain 1: Gradient evaluation took 1.4e-05 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.14 seconds.
+Chain 1: Gradient evaluation took 1.5e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.15 seconds.
 Chain 1: Adjust your expectations accordingly!
 Chain 1: 
 Chain 1: 
@@ -983,15 +994,15 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 0.06 seconds (Warm-up)
-Chain 1:                0.061 seconds (Sampling)
-Chain 1:                0.121 seconds (Total)
+Chain 1:  Elapsed Time: 0.065 seconds (Warm-up)
+Chain 1:                0.063 seconds (Sampling)
+Chain 1:                0.128 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 5e-06 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.05 seconds.
+Chain 2: Gradient evaluation took 6e-06 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.06 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -1008,15 +1019,15 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 0.063 seconds (Warm-up)
-Chain 2:                0.063 seconds (Sampling)
+Chain 2:  Elapsed Time: 0.065 seconds (Warm-up)
+Chain 2:                0.061 seconds (Sampling)
 Chain 2:                0.126 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 3).
 Chain 3: 
-Chain 3: Gradient evaluation took 6e-06 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.06 seconds.
+Chain 3: Gradient evaluation took 1.2e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.12 seconds.
 Chain 3: Adjust your expectations accordingly!
 Chain 3: 
 Chain 3: 
@@ -1033,15 +1044,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 0.061 seconds (Warm-up)
-Chain 3:                0.062 seconds (Sampling)
-Chain 3:                0.123 seconds (Total)
+Chain 3:  Elapsed Time: 0.062 seconds (Warm-up)
+Chain 3:                0.064 seconds (Sampling)
+Chain 3:                0.126 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'count' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 4e-06 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.04 seconds.
+Chain 4: Gradient evaluation took 5e-06 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.05 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -1058,9 +1069,9 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 0.061 seconds (Warm-up)
+Chain 4:  Elapsed Time: 0.063 seconds (Warm-up)
 Chain 4:                0.062 seconds (Sampling)
-Chain 4:                0.123 seconds (Total)
+Chain 4:                0.125 seconds (Total)
 Chain 4: </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>prior_sample <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(prior_team_goals_model) <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span>
