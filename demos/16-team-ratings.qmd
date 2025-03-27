@@ -44,7 +44,7 @@ As discussed in lecture, we'll start with the traditional `lme4` multilevel mode
 ```{r}
 #| warning: false
 library(lme4)
-glmer_goal_model <- glmer(goals ~ 0 + is_home + (1 | off_team) + (1 | def_team),
+glmer_goal_model <- glmer(goals ~ is_home + (1 | off_team) + (1 | def_team),
                                family = poisson,
                                data = eng_match_goals_scored)
 summary(glmer_goal_model)
@@ -58,7 +58,7 @@ Rather than using `lme4` to fit the frequentist version of the multilevel model,
 
 ```{r}
 library(rstanarm)
-team_goals_model <- stan_glmer(goals ~ 0 + is_home + (1 | off_team) + (1 | def_team),
+team_goals_model <- stan_glmer(goals ~ is_home + (1 | off_team) + (1 | def_team),
                                family = poisson,
                                data = eng_match_goals_scored, seed = 2013)
 ```
@@ -123,7 +123,7 @@ In order to predictions for this game, we will need to use the posterior distrib
 
 ```{r}
 chelsea_liverpool_samples <- posterior_sample |>
-  dplyr::select(`is_home`, `b[(Intercept) off_team:Chelsea]`,
+  dplyr::select(`(Intercept)`, `is_home`, `b[(Intercept) off_team:Chelsea]`,
                 `b[(Intercept) def_team:Liverpool]`) |>
   # Clean up the column names for ease:
   janitor::clean_names()
@@ -134,7 +134,7 @@ Remember, we can effectively do whatever we want with our parameters' posterior 
 
 ```{r}
 chelsea_liverpool_samples <- chelsea_liverpool_samples |>
-  mutate(log_pred = is_home + b_intercept_off_team_chelsea + 
+  mutate(log_pred = intercept + is_home + b_intercept_off_team_chelsea + 
            b_intercept_def_team_liverpool,
          response_pred = exp(log_pred))
 chelsea_liverpool_samples
@@ -169,6 +169,7 @@ chelsea_liverpool_samples |>
   geom_histogram() +
   theme_bw()
 ```
+
 The above samples and resulting histogram are called the __posterior predictive distribution__, as it captures the generation of observations from the distribution of the outcome implied by the posterior distribution of the parameters of interest. 
 
 BUT - we just talked walked through this process for only a single observation! All of those steps were used to generate the posterior distribution predictions for Chelsea's goals scored against Liverpool at home. __We need to do this process for every single observation we want to generate predictions for!__
@@ -191,6 +192,7 @@ head(chelsea_liverpool_samples$log_pred)
 posterior_epred(team_goals_model, newdata = chelsea_liverpool) |> as_tibble()
 head(chelsea_liverpool_samples$response_pred)
 ```
+
   + By default, you should use `posterior_epred()` instead of `posterior_linpred()` because of the link transformation to the response scale. The following code chunk shows what the output looks like for generating the posterior distributions of the conditional expectations for each of the observations in the data where each row is a posterior sample while **each column is an observation from the dataset that we're interested in generating predictions for**:
   
 ```{r}
