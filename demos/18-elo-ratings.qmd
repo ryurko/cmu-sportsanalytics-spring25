@@ -1,0 +1,252 @@
+---
+title: "Lecture 19: Introduction to Elo ratings"
+format: html
+---
+
+## Introduction
+
+The purpose of this demo is walk through the basics of Elo ratings, with a simple implementation from scratch. We'll just consider a dataset containing the outcomes of NFL games from the most recent 2024-25 season, including regular season and playoffs. You can find this dataset under demos/week11 as `nfl_2425_games.csv`. The following code chunk reads in the dataset and displays the columns which are self-explanatory:
+
+```{r}
+#| warning: false
+#| message: false
+library(tidyverse)
+nfl_games <- read_csv(here::here("data/nfl_2425_games.csv"))
+nfl_games
+```
+
+Note the `game_type` column indicates if the game was during the regular season (`REG`), or during the playoffs with the different values indicating the different playoff rounds:
+
+```{r}
+table(nfl_games$game_type)
+```
+
+The `week` column just increases in the correct order, which will make this process easy for us. 
+
+We’ll easily be able to use this data for generating Elo ratings over the course of the NFL season. The first step we need to take is create a column denoting whether the home team won (1), tied (0.5), or lost (0) with `mutate` and `case_when`:
+
+```{r}
+nfl_games <- nfl_games |>
+  mutate(game_outcome = case_when(
+    home_score > away_score ~ 1,
+    home_score == away_score ~ 0.5,
+    .default = 0
+  ))
+```
+
+
+## Elo rating basics
+
+We’re going to consider the basic version of Elo ratings covered in [wikipedia](https://en.wikipedia.org/wiki/Elo_rating_system). Let the rating for the home team be $R_{\text{home}}$ and the away team rating be $R_{\text{away}}$. Then the __expected score__ for the home team is:
+
+$$
+E_{\text{home}} = \frac{1}{1+10^{\left(R_{\text{away}}-R_{\text{home}}\right) / 400}}
+$$
+and the similar quantity for the away team is:
+
+$$
+E_{\text{away}} = \frac{1}{1+10^{\left(R_{\text{home}}-R_{\text{away}}\right) / 400}}
+$$
+_The 400 and 10 basically determine the scaling of the ratings and can be modified, as discussed in lecture._ These expected scores represent the probability of winning plus half the probability of drawing, but for our purposes we can treat these basically as the probability of winning.
+
+We then update the ratings for the home team if they scored $S_{\text{home}}$ points:
+
+$$
+R^{\text{new}}_{\text{home}} = R_{\text{home}} + K \cdot (S_{\text{home}} - E_{\text{home}})
+$$
+where $K$ is known as the __update factor__. This is a __tuning parameter__, which should be selected via out-of-sample performance. For now we'll just consider $K = 20$, to represent the maximum number of Elo rating points a team gains from winning a single game. 
+
+To simplify this process, we’re going to create two helper functions to calculate both the expected score and new rating for a team given observed outcome:
+
+```{r}
+calc_expected_score <- function(team_rating, opp_team_rating) {
+  1 / (1 + 10^((opp_team_rating - team_rating) / 400))
+}
+
+calc_new_rating <- function(team_rating, observed_score, expected_score,
+                            k_factor = 20) {
+  team_rating + k_factor * (observed_score - expected_score)
+}
+```
+
+The functions are demonstrated below using an example where a team with a rating of 1400 beats a team with a rating of 1600, such that an observed score of 1 indicates a win (versus 0.5 for draw and 0 for loss):
+
+```{r}
+# First the expected score, ie win probability for the team of interest:
+calc_expected_score(1400, 1600)
+
+# And now throw that into the calc_new_rating function:
+calc_new_rating(1400, 1, calc_expected_score(1400, 1600))
+```
+
+The above indicates that the team with a rating of 1400 only had an estimated probability of winning at 24%, but then after beating the team with a rating of 1600 their Elo rating increases to about 1415. 
+
+## Elo ratings for 2024-25 NFL season
+
+Now with the basics, let’s move on to perform these calculations over the entire season, updating our table to include each team’s Elo rating following every game. We can implement this using a for loop to proceed through each game in the `nfl_games` table, .ooking up each team’s previous ratings and performing the above calculations.
+
+Prior to beginning this loop, we will set-up a table initializing each team with a rating of 1500. This a naive approach since we likely have prior knowledge about each team's strength before the start of the season, but we'll address that later. The code chunk below initializes this starting table of ratings:
+
+```{r}
+nfl_elo_ratings <- tibble(team = unique(nfl_games$home_team),
+                          elo_rating = 1500,
+                          week = 0)
+nfl_elo_ratings
+```
+
+The following code chunk proceeds to loop through and compute the ratings for each team after each game:
+
+```{r}
+for (game_i in 1:nrow(nfl_games)) {
+   
+  # Which teams are we looking at?
+  home_team <- nfl_games$home_team[game_i]
+  away_team <- nfl_games$away_team[game_i]
+  # What was the observed score by the home team?
+  home_score <- nfl_games$game_outcome[game_i]
+  # Week number?
+  game_week <- nfl_games$week[game_i]
+  
+  # What was each team's rating from their latest game?
+  home_rating <- nfl_elo_ratings |>
+    filter(team == home_team) |>
+    # Sort in descending order
+    arrange(desc(week)) |>
+    # Grab the latest game
+    slice(1) |>
+    # Just return the elo rating
+    pull(elo_rating)
+  
+  # Same thing for away team
+  away_rating <- nfl_elo_ratings |>
+    filter(team == away_team) |>
+    arrange(desc(week)) |>
+    slice(1) |>
+    pull(elo_rating)
+  
+  # Now get their new ratings:
+  new_home_rating <- calc_new_rating(home_rating, home_score, 
+                                     calc_expected_score(home_rating, away_rating))
+  # Opposite for away team:
+  new_away_rating <- calc_new_rating(away_rating, 1 - home_score, 
+                                     calc_expected_score(away_rating, home_rating))
+  
+  # Finally - join to the nfl_elo_ratings table each team's new ratings for the week:
+  updated_ratings <- tibble(team = c(home_team, away_team),
+                            elo_rating = c(new_home_rating, new_away_rating),
+                            week = rep(game_week, 2))
+  
+  nfl_elo_ratings <- nfl_elo_ratings |>
+    bind_rows(updated_ratings)
+  
+}
+```
+
+
+We can view the final rating for each team pretty easily:
+
+```{r}
+nfl_elo_ratings |>
+  group_by(team) |>
+  summarize(final_rating = elo_rating[which.max(week)]) |>
+  arrange(desc(final_rating))
+```
+
+And now let's examine what these ratings look like over the course of the season:
+
+```{r}
+nfl_elo_ratings |>
+  ggplot(aes(x = week, y = elo_rating, color = team)) +
+  geom_line() +
+  theme_bw() +
+  labs(x = "Week", y = "Elo rating",
+       title = "NFL Elo ratings in 2024 season")
+```
+
+This is obviously an ugly plot... instead one could take advantage of the team colors available using the [`load_teams`](https://nflreadr.nflverse.com/reference/load_teams.html) function.  This is a little more involved, while I won’t walk through this code step-by-step, here is how one could highlight each division:
+
+```{r}
+#| fig-height: 10
+#| fig-width: 8
+library(nflreadr)
+nfl_team_colors <- load_teams() |>
+  dplyr::select(team_abbr, team_division, team_color)
+
+# Create a dataset that has each team's final Elo rating
+nfl_team_final <- nfl_elo_ratings |>
+  group_by(team) |>
+  summarize(week = max(week),
+            elo_rating = elo_rating[which.max(week)],
+            .groups = "drop") |>
+  inner_join(nfl_team_colors, by = c("team" = "team_abbr")) |>
+  arrange(desc(elo_rating))
+ 
+# Need ggrepel:
+library(ggrepel)
+division_plots <- 
+  lapply(sort(unique(nfl_team_final$team_division)),
+         function(nfl_division) {                            
+             # Pull out the teams in the division
+             division_teams <- nfl_team_final |>
+               filter(team_division == nfl_division) |>
+               mutate(team = fct_reorder(team, desc(elo_rating))) 
+             
+             # Get the Elo ratings data just for these teams:
+             division_data <- nfl_elo_ratings |>
+               filter(team %in% division_teams$team) |>
+               mutate(team = factor(team,
+                                    levels = levels(division_teams$team))) |>
+               # Make text labels for them:
+               group_by(team) |>
+               mutate(team_label = if_else(week == max(week),
+                                           as.character(team), 
+                                           NA_character_)) |>
+               ungroup()
+             
+             # Now make the full plot
+             nfl_elo_ratings |>
+               # Plot all of the other teams as gray lines:
+               filter(!(team %in% division_teams$team)) |>
+               ggplot(aes(x = week, y = elo_rating, group = team)) +
+               geom_line(color = "gray", alpha = 0.5) +
+               # But display the division teams with their colors:
+               geom_line(data = division_data,
+                         aes(x = week, y = elo_rating, group = team,
+                             color = team)) +
+               geom_label_repel(data = division_data,
+                                aes(label = team_label,
+                                    color = team), nudge_x = 1, na.rm = TRUE,
+                                direction = "y") +
+               scale_color_manual(values = division_teams$team_color, guide = "none") +
+               theme_bw() +
+               labs(x = "Week", y = "Elo rating",
+                    title = paste0("Division: ", nfl_division)) 
+         })
+# Display the grid of plots with cowplot!
+library(cowplot)
+plot_grid(plotlist = division_plots, ncol = 2, align = "hv")
+```
+
+
+Rather than using 1500 as the initial values for every team, you could use a more informed starting point such as [Neil Paine's NFL Elo ratings](https://neilpaine.substack.com/p/2024-nfl-elo-ratings-and-projections) which start at the beginning of the league history. The code chunk below reads in this data, but I'll leave it as an exercise for you to grab the ratings at the end of the 2023-24 season to use as initial values for 2024-25:
+
+```{r}
+paine_elo_ratings <- read_csv("https://raw.githubusercontent.com/Neil-Paine-1/NFL-elo-ratings/main/NFL-elo-ratings.csv")
+paine_elo_ratings
+```
+
+
+## Additional Resources
+
++ Simulating NFL seasons with [`nflseedR`](https://nflseedr.com/articles/nflsim.html)
+
++ The [`elo` package](https://eheinzen.github.io/elo/) in `R` provides convenient functions for computing Elo ratings, similar to the functions above
+
++ Tennis Elo ratings from [tennisabstract](https://tennisabstract.com/reports/atp_elo_ratings.html)
+
++ Also see the [Glicko rating system by the GOAT Mark Glickman](https://en.wikipedia.org/wiki/Glicko_rating_system) as well as the [TrueSkill system for videogames](https://en.wikipedia.org/wiki/TrueSkill)
+
+
+
+
+

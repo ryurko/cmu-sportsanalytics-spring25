@@ -22,3 +22,5 @@ title: "Demos"
 | 14      | Mar 18  | Introduction to Stan | [HTML](demos/14-intro-stan.qmd)  |
 | 15      | Mar 20  | Bayesian RAPM in Stan | [HTML](demos/15-bayes-rapm-stan.qmd)  |
 | 16      | Mar 27  | Modeling team ratings and posterior predictions | [HTML](demos/16-team-ratings.qmd)  |
+| 17      | Apr 1  | Bayesian model comparison | [HTML](demos/17-bayes-model-comp.qmd)  |
+| 18      | Apr 1  | Introduction to Elo ratings | [HTML](demos/18-elo-ratings.qmd)  |
