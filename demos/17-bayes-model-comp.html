@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lecture 19: Bayesian model comparison – Special Topics: Sports Analytics 36-460/660</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-51f09ead35d5b96974be4249e4526bd0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Special Topics: Sports Analytics 36-460/660
+      </li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Special Topics: Sports Analytics 36-460/660</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/ryurko/cmu-sportsanalytics-spring25" title="GitHub" class="quarto-navigation-tool px-1" aria-label="GitHub"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../lectures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lectures</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../demos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Demos</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#fitting-models-in-brms" id="toc-fitting-models-in-brms" class="nav-link" data-scroll-target="#fitting-models-in-brms">Fitting models in <code>brms</code></a></li>
+  <li><a href="#model-comparison-and-selection" id="toc-model-comparison-and-selection" class="nav-link" data-scroll-target="#model-comparison-and-selection">Model comparison and selection</a>
+  <ul class="collapse">
+  <li><a href="#rmse-comparison" id="toc-rmse-comparison" class="nav-link" data-scroll-target="#rmse-comparison">RMSE Comparison</a></li>
+  <li><a href="#elpd-comparison" id="toc-elpd-comparison" class="nav-link" data-scroll-target="#elpd-comparison">ELPD Comparison</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lecture 19: Bayesian model comparison</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The purpose of this demo is introduce approaches for comparing Bayesian regression models. Similar to the last demo, we will use the soccer match data from HW1. As a reminder, this dataset in the homeworks/hw1 folder on Canvas (<code>soccer_match_goals.csv</code>) and contains the goals scored across men’s soccer matches in the five biggest European leagues during the 2023-2024 season. This dataset contains the following columns:</p>
+<ol type="1">
+<li><p><code>goals</code>: number of goals scored by <code>team</code> in a match</p></li>
+<li><p><code>xG</code>: accumulated number of expected goals by <code>team</code> in a match</p></li>
+<li><p><code>off_team</code>: the team name affiliated with the <strong>offense scoring</strong> the number of <code>goals</code> and total <code>xG</code></p></li>
+<li><p><code>def_team</code>: the team name affiliated with the <strong>defense allowing</strong> the number of <code>goals</code> and total <code>xG</code></p></li>
+<li><p><code>league</code>: string denoting the country: ENG (Premier League), ESP (La Liga), FRA (Ligue 1), GER (Fußball-Bundesliga), and ITA (Serie A)</p></li>
+<li><p><code>match_id</code>: unique identifier for each match, such that each match has two rows in the dataset, one for the home team and one for the away team</p></li>
+<li><p><code>is_home</code>: binary indicator denoting whether or not the team was the home team in the match.</p></li>
+</ol>
+<p>Note that each row in this dataset corresponds to information about a team’s offensive performance for a single match. This means a team is repeatedly observed for each match they played during the 2023-2024 season. I constructed this dataset using the <a href="https://jaseziv.github.io/worldfootballR/">worldfootballR</a> package, and the script <code>init_soccer_match_goals.R</code> on Canvas is the code I used to make the dataset.</p>
+<p>The code chunk below loads in the data, and then for ease we’ll only consider matches in the Premier League (i.e., <code>league == ENG</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>match_goals_scored <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"data/soccer_match_goals.csv"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the ENG only table:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>eng_match_goals_scored <span class="ot">&lt;-</span> match_goals_scored <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(league <span class="sc">==</span> <span class="st">"ENG"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>eng_match_goals_scored</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 760 × 7
+   goals    xG off_team       def_team        league match_id is_home
+   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;          &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+ 1     0   0.3 Burnley        Manchester City ENG           1       1
+ 2     2   0.8 Arsenal        Nott'ham Forest ENG           2       1
+ 3     0   2.7 Everton        Fulham          ENG           3       1
+ 4     0   0.5 Sheffield Utd  Crystal Palace  ENG           4       1
+ 5     4   4   Brighton       Luton Town      ENG           5       1
+ 6     1   1.3 Bournemouth    West Ham        ENG           6       1
+ 7     5   3.3 Newcastle Utd  Aston Villa     ENG           7       1
+ 8     2   2.2 Brentford      Tottenham       ENG           8       1
+ 9     1   1.4 Chelsea        Liverpool       ENG           9       1
+10     1   2.2 Manchester Utd Wolves          ENG          10       1
+# ℹ 750 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="fitting-models-in-brms" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-models-in-brms">Fitting models in <code>brms</code></h2>
+<p>As in the previous demo, we’ll continue to model the same goals scored response variable using a Bayesian hierarchical Poisson regression model. But rather than using the <a href="https://mc-stan.org/rstanarm/"><code>rstanarm</code> package</a>, we’ll now switch to the popular <a href="https://paulbuerkner.com/brms/"><code>brms</code> package</a> that was demonstrated to you by <a href="https://ryurko.github.io/cmu-sportsanalytics-spring25/lectures/17-multilevel-heterogeneity.html#/what-is-brms">Quang Nguyen in his guest lecture</a>. The <code>brms</code> package is effectively the same as <code>rstanarm</code>, but provides greater flexibility in the types of models it can fit (<a href="https://discourse.mc-stan.org/t/rstan-cmdstanr-brms-and-rstanarm/18865/2">see here for a nice summary by one of the Stan developers</a>) - along with more helper functions that were developed to work with it.</p>
+<p>The following code chunk shows you how to fit the same Poisson model in the previous demo, along with viewing the summary, and extracting the posterior samples for analysis:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'brms' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: Rcpp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'Rcpp' was built under R version 4.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading 'brms' package (version 2.21.0). Useful instructions
+can be found by typing help('brms'). A more detailed introduction
+to the package is available through vignette('brms_overview').</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'brms'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:stats':
+
+    ar</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>team_goals_model <span class="ot">&lt;-</span> <span class="fu">brm</span>(goals <span class="sc">~</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">family =</span> poisson,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">data =</span> eng_match_goals_scored, <span class="at">seed =</span> <span class="dv">2013</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Compiling Stan program...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Start sampling</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 0.000101 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.01 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.949 seconds (Warm-up)
+Chain 1:                0.646 seconds (Sampling)
+Chain 1:                1.595 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 4.2e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 0.969 seconds (Warm-up)
+Chain 2:                0.654 seconds (Sampling)
+Chain 2:                1.623 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 4.4e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.44 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 0.943 seconds (Warm-up)
+Chain 3:                0.65 seconds (Sampling)
+Chain 3:                1.593 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 4.7e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.47 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 0.924 seconds (Warm-up)
+Chain 4:                0.703 seconds (Sampling)
+Chain 4:                1.627 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(team_goals_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: poisson 
+  Links: mu = log 
+Formula: goals ~ is_home + (1 | off_team) + (1 | def_team) 
+   Data: eng_match_goals_scored (Number of observations: 760) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Multilevel Hyperparameters:
+~def_team (Number of levels: 20) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.25      0.06     0.16     0.38 1.00     1185     2303
+
+~off_team (Number of levels: 20) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     0.27      0.06     0.17     0.41 1.00     1399     1914
+
+Regression Coefficients:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept     0.33      0.09     0.15     0.51 1.00     1274     1845
+is_home       0.20      0.05     0.09     0.30 1.00     6173     3305
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(team_goals_model, <span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Family: poisson 
+  Links: mu = log 
+Formula: goals ~ is_home + (1 | off_team) + (1 | def_team) 
+   Data: eng_match_goals_scored (Number of observations: 760) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Multilevel Hyperparameters:
+~def_team (Number of levels: 20) 
+              Estimate Est.Error l-95% CI u-95% CI   Rhat Bulk_ESS Tail_ESS
+sd(Intercept)   0.2493    0.0564   0.1583   0.3765 1.0005     1185     2303
+
+~off_team (Number of levels: 20) 
+              Estimate Est.Error l-95% CI u-95% CI   Rhat Bulk_ESS Tail_ESS
+sd(Intercept)   0.2659    0.0611   0.1680   0.4095 1.0039     1399     1914
+
+Regression Coefficients:
+          Estimate Est.Error l-95% CI u-95% CI   Rhat Bulk_ESS Tail_ESS
+Intercept   0.3305    0.0942   0.1475   0.5140 1.0030     1274     1845
+is_home     0.1967    0.0537   0.0923   0.3040 1.0006     6173     3305
+
+Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
+and Tail_ESS are effective sample size measures, and Rhat is the potential
+scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>posterior_sample <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(team_goals_model)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>posterior_sample</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,000 × 47
+   b_Intercept b_is_home sd_def_team__Intercept sd_off_team__Intercept Intercept
+         &lt;dbl&gt;     &lt;dbl&gt;                  &lt;dbl&gt;                  &lt;dbl&gt;     &lt;dbl&gt;
+ 1       0.244    0.207                   0.311                  0.305     0.347
+ 2       0.330    0.217                   0.251                  0.322     0.438
+ 3       0.250    0.229                   0.222                  0.284     0.365
+ 4       0.342    0.144                   0.248                  0.267     0.414
+ 5       0.232    0.244                   0.252                  0.369     0.355
+ 6       0.409    0.116                   0.270                  0.305     0.467
+ 7       0.151    0.348                   0.224                  0.303     0.325
+ 8       0.298    0.104                   0.312                  0.277     0.350
+ 9       0.298    0.0907                  0.263                  0.268     0.344
+10       0.199    0.260                   0.274                  0.295     0.329
+# ℹ 3,990 more rows
+# ℹ 42 more variables: `r_def_team[Arsenal,Intercept]` &lt;dbl&gt;,
+#   `r_def_team[Aston.Villa,Intercept]` &lt;dbl&gt;,
+#   `r_def_team[Bournemouth,Intercept]` &lt;dbl&gt;,
+#   `r_def_team[Brentford,Intercept]` &lt;dbl&gt;,
+#   `r_def_team[Brighton,Intercept]` &lt;dbl&gt;,
+#   `r_def_team[Burnley,Intercept]` &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>You’ll notice that there are two <code>Intercept</code> terms displayed in the output: <code>b_Intercept</code> and <code>Intercept</code>. You can ignore the <code>Intercept</code> column because that refers to <a href="https://discourse.mc-stan.org/t/what-is-the-difference-between-intercept-and-b-intercept/20423/7">the intercept on the mean-centered scale</a> that <code>brms</code> automatically performs beforehand (this is done because it is usually more stable in the model fitting process). So from an inference perspective, you can ignore <code>Intercept</code>. The fixed effects are all represented by the terms with <code>b_</code> in the prefix (e.g., <code>b_Intercept</code>, <code>b_is_home</code>).</p>
+</section>
+<section id="model-comparison-and-selection" class="level2">
+<h2 class="anchored" data-anchor-id="model-comparison-and-selection">Model comparison and selection</h2>
+<p>Let’s imagine we’re interested in comparing two different models:</p>
+<ol type="1">
+<li><p>the model from above <code>goals ~ is_home + (1 | off_team) + (1 | def_team)</code>, and</p></li>
+<li><p>the model with <code>def_team</code> random effects removed <code>goals ~ is_home + (1 | off_team)</code>.</p></li>
+</ol>
+<p>We could assess the training data performance of the models, but we know that will likely be biased towards more complex models. Instead, we should consider implementing some type of out-of-sample comparison via train/test splits or <span class="math inline">\(K\)</span>-fold cross-validation to compare the models. Bayesian regression models are no different than frequentist regression models in the sense that we should evaluate how the models generalize to new data. However, the downside is that the Bayesian models tend to take longer to fit which makes implementing cross-validation time consuming (depending on the model you’re fitting).</p>
+<p>To demonstrate, I’m only going to consider a random 80/20 split in this demo - <strong>but you really should use cross-validation instead!</strong> The code below initializes the training and test datasets we’ll use to compare the two models:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1979</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>eng_match_goals_scored <span class="ot">&lt;-</span> eng_match_goals_scored <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">fold =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"train"</span>, <span class="st">"test"</span>), <span class="fu">n</span>(), <span class="at">replace =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">prob =</span> <span class="fu">c</span>(.<span class="dv">8</span>, .<span class="dv">2</span>)))</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> eng_match_goals_scored <span class="sc">|&gt;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(fold <span class="sc">==</span> <span class="st">"train"</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> eng_match_goals_scored <span class="sc">|&gt;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(fold <span class="sc">==</span> <span class="st">"test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, we’ll fit the two models on the training data. For ease, we’ll speed things up with <a href="https://mc-stan.org/cmdstanr/"><code>cmdstanr</code></a> which effectively makes the model fitting faster since it does not directly call any C++ code from R. Additionally, the latest improvements in Stan will be available from R immediately after updating CmdStan via the package installation step: <code>cmdstanr::install_cmdstan()</code>. This will also work better with external processes, such as rendering a Stan model in Quarto or when knitting a RMarkdown file (you may notice an error message in my original <code>brms</code> fit above that does not use <code>cmdstanr</code> - but this “fake” error is only an artifact of the rendering step).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the model with defense</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>model_w_def <span class="ot">&lt;-</span> <span class="fu">brm</span>(goals <span class="sc">~</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> def_team),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">family =</span> poisson, <span class="at">backend =</span> <span class="st">"cmdstanr"</span>,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                        <span class="at">data =</span> train_data, <span class="at">seed =</span> <span class="dv">2013</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Start sampling</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 4 sequential chains...
+
+Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 1 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 1 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 1 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 1 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 1 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 1 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 1 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 1 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 1 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 1 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 1 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 1 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 1 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 1 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 1 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 1 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 1 finished in 1.2 seconds.
+Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 2 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 2 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 2 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 2 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 2 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 2 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 2 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 2 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 2 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 2 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 2 finished in 1.1 seconds.
+Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 3 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 3 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 3 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 3 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 3 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 3 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 3 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 3 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 3 finished in 1.2 seconds.
+Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 4 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 4 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 4 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 4 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 4 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 4 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 4 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 4 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 4 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 4 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 4 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 4 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 4 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 4 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 4 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 4 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 4 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 4 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 4 finished in 1.1 seconds.
+
+All 4 chains finished successfully.
+Mean chain execution time: 1.2 seconds.
+Total execution time: 4.8 seconds.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>model_wo_def <span class="ot">&lt;-</span> <span class="fu">brm</span>(goals <span class="sc">~</span> is_home <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> off_team),</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">family =</span> poisson, <span class="at">backend =</span> <span class="st">"cmdstanr"</span>,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">data =</span> train_data, <span class="at">seed =</span> <span class="dv">2013</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Start sampling</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 4 sequential chains...
+
+Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 1 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 1 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 1 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 1 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 1 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 1 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 1 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 1 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 1 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 1 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 1 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 1 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 1 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 1 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 1 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 1 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 1 finished in 0.7 seconds.
+Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 2 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 2 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 2 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 2 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 2 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 2 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 2 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 2 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 2 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 2 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 2 finished in 0.7 seconds.
+Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 3 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 3 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 3 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 3 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 3 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 3 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 3 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 3 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 3 finished in 0.7 seconds.
+Chain 4 Iteration:    1 / 2000 [  0%]  (Warmup) 
+Chain 4 Iteration:  100 / 2000 [  5%]  (Warmup) 
+Chain 4 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+Chain 4 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+Chain 4 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+Chain 4 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+Chain 4 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+Chain 4 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+Chain 4 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+Chain 4 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+Chain 4 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+Chain 4 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+Chain 4 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+Chain 4 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+Chain 4 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+Chain 4 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+Chain 4 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+Chain 4 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+Chain 4 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+Chain 4 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+Chain 4 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+Chain 4 Iteration: 2000 / 2000 [100%]  (Sampling) 
+Chain 4 finished in 0.7 seconds.
+
+All 4 chains finished successfully.
+Mean chain execution time: 0.7 seconds.
+Total execution time: 3.1 seconds.</code></pre>
+</div>
+</div>
+<section id="rmse-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="rmse-comparison">RMSE Comparison</h3>
+<p>For our initial comparison, we’ll evaluate each model’s predictions using <strong>root mean squared error (RMSE)</strong>. If you remember from the previous lecture/demo, when we generate predictions with Bayesian regression models we will have a prediction for every observation <strong>with every posterior sample</strong>. For instance, the following code chunk generates the test data predictions using the posterior distribution for the conditional expectation (i.e., <code>posterior_epred</code> from last time) with <code>model_w_def</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>test_pred_w_def_samples <span class="ot">&lt;-</span> <span class="fu">posterior_epred</span>(model_w_def, <span class="at">newdata =</span> test_data)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">as_tibble</span>(test_pred_w_def_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if
+`.name_repair` is omitted as of tibble 2.0.0.
+ℹ Using compatibility `.name_repair`.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,000 × 158
+      V1    V2    V3    V4    V5    V6    V7    V8    V9   V10   V11   V12   V13
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1 0.604  1.50  1.76 1.21  0.918  2.48  1.11 0.904  1.68  2.31 1.05   2.20 1.77 
+ 2 1.12   2.62  1.35 1.29  0.890  2.17  1.90 1.62   1.80  2.58 1.44   2.40 1.43 
+ 3 1.44   1.80  1.28 1.77  0.900  1.97  1.39 1.02   1.72  2.17 1.00   1.97 1.32 
+ 4 0.938  1.51  1.74 0.886 1.00   2.50  1.79 1.23   1.78  2.37 1.76   1.98 1.96 
+ 5 1.00   1.82  1.26 1.66  1.03   1.65  1.32 1.20   1.57  2.16 0.976  2.14 1.17 
+ 6 0.975  1.89  2.28 1.05  0.911  2.97  2.05 1.26   1.80  2.62 1.58   2.43 2.10 
+ 7 1.14   1.83  1.18 1.20  0.815  3.00  1.56 1.31   1.92  2.48 0.972  3.04 0.973
+ 8 0.967  2.02  1.59 2.11  1.16   1.77  1.66 1.48   1.94  1.77 1.54   1.99 1.87 
+ 9 1.16   1.77  1.56 1.98  1.20   1.87  1.24 1.98   1.71  2.73 1.37   2.30 1.76 
+10 1.27   2.08  1.64 1.52  0.766  2.34  1.84 0.849  1.71  2.60 1.23   2.26 1.29 
+# ℹ 3,990 more rows
+# ℹ 145 more variables: V14 &lt;dbl&gt;, V15 &lt;dbl&gt;, V16 &lt;dbl&gt;, V17 &lt;dbl&gt;, V18 &lt;dbl&gt;,
+#   V19 &lt;dbl&gt;, V20 &lt;dbl&gt;, V21 &lt;dbl&gt;, V22 &lt;dbl&gt;, V23 &lt;dbl&gt;, V24 &lt;dbl&gt;,
+#   V25 &lt;dbl&gt;, V26 &lt;dbl&gt;, V27 &lt;dbl&gt;, V28 &lt;dbl&gt;, V29 &lt;dbl&gt;, V30 &lt;dbl&gt;,
+#   V31 &lt;dbl&gt;, V32 &lt;dbl&gt;, V33 &lt;dbl&gt;, V34 &lt;dbl&gt;, V35 &lt;dbl&gt;, V36 &lt;dbl&gt;,
+#   V37 &lt;dbl&gt;, V38 &lt;dbl&gt;, V39 &lt;dbl&gt;, V40 &lt;dbl&gt;, V41 &lt;dbl&gt;, V42 &lt;dbl&gt;,
+#   V43 &lt;dbl&gt;, V44 &lt;dbl&gt;, V45 &lt;dbl&gt;, V46 &lt;dbl&gt;, V47 &lt;dbl&gt;, V48 &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>You can see that this creates a dataset with a row for each posterior sample, along with a column for each observation (158 in this case). We can compute the traditional point estimate version of RMSE, by first taking the posterior mean of each observation’s prediction (i.e., column means) and then computing the RMSE across all observations:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">mean</span>((test_data<span class="sc">$</span>goals <span class="sc">-</span> <span class="fu">colMeans</span>(test_pred_w_def_samples))<span class="sc">^</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.190338</code></pre>
+</div>
+</div>
+<p>We can repeat to compare the RMSE with defense removed:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>test_pred_wo_def_samples <span class="ot">&lt;-</span> <span class="fu">posterior_epred</span>(model_wo_def, <span class="at">newdata =</span> test_data)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">mean</span>((test_data<span class="sc">$</span>goals <span class="sc">-</span> <span class="fu">colMeans</span>(test_pred_wo_def_samples))<span class="sc">^</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.238943</code></pre>
+</div>
+</div>
+<p>From this we can see that the model with defense included displays better performance (this should not be surprising).</p>
+<p>However, this is just a single number summary. Instead of collapsing every observation’s prediction into a one number, we could take also advantage of the posterior samples. While you could manually compute the test error for each of the posterior sample predictions, <code>brms</code> has a convenient <code>predictive_error()</code> function that will return this for you. For convenience, <code>brms</code> has a function <code>predictive_error()</code> that will return the matrix of test errors (i.e., observed - predicted) for each posterior sample (the rows) and observations (the columns). For instance, the following code chunk generates the test data prediction errors using the posterior distribution for the conditional expectation (i.e., <code>posterior_epred</code> from last time) with <code>model_w_def</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>test_error_w_def_samples <span class="ot">&lt;-</span> <span class="fu">predictive_error</span>(model_w_def, <span class="at">newdata =</span> test_data,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                                             <span class="at">method =</span> <span class="st">"posterior_epred"</span>)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="fu">as_tibble</span>(test_error_w_def_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,000 × 158
+       V1      V2    V3     V4    V5     V6      V7     V8    V9   V10    V11
+    &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+ 1 -0.604  0.497  -1.76 -1.21  1.08  -1.48   0.885  1.10    1.32 0.691 -1.05 
+ 2 -1.12  -0.617  -1.35 -1.29  1.11  -1.17   0.0957 0.379   1.20 0.419 -1.44 
+ 3 -1.44   0.203  -1.28 -1.77  1.10  -0.968  0.613  0.977   1.28 0.828 -1.00 
+ 4 -0.938  0.491  -1.74 -0.886 0.997 -1.50   0.205  0.766   1.22 0.629 -1.76 
+ 5 -1.00   0.176  -1.26 -1.66  0.973 -0.651  0.677  0.802   1.43 0.840 -0.976
+ 6 -0.975  0.112  -2.28 -1.05  1.09  -1.97  -0.0481 0.737   1.20 0.375 -1.58 
+ 7 -1.14   0.175  -1.18 -1.20  1.19  -2.00   0.439  0.687   1.08 0.524 -0.972
+ 8 -0.967 -0.0228 -1.59 -2.11  0.843 -0.772  0.337  0.524   1.06 1.23  -1.54 
+ 9 -1.16   0.225  -1.56 -1.98  0.795 -0.870  0.759  0.0178  1.29 0.268 -1.37 
+10 -1.27  -0.0776 -1.64 -1.52  1.23  -1.34   0.164  1.15    1.29 0.397 -1.23 
+# ℹ 3,990 more rows
+# ℹ 147 more variables: V12 &lt;dbl&gt;, V13 &lt;dbl&gt;, V14 &lt;dbl&gt;, V15 &lt;dbl&gt;, V16 &lt;dbl&gt;,
+#   V17 &lt;dbl&gt;, V18 &lt;dbl&gt;, V19 &lt;dbl&gt;, V20 &lt;dbl&gt;, V21 &lt;dbl&gt;, V22 &lt;dbl&gt;,
+#   V23 &lt;dbl&gt;, V24 &lt;dbl&gt;, V25 &lt;dbl&gt;, V26 &lt;dbl&gt;, V27 &lt;dbl&gt;, V28 &lt;dbl&gt;,
+#   V29 &lt;dbl&gt;, V30 &lt;dbl&gt;, V31 &lt;dbl&gt;, V32 &lt;dbl&gt;, V33 &lt;dbl&gt;, V34 &lt;dbl&gt;,
+#   V35 &lt;dbl&gt;, V36 &lt;dbl&gt;, V37 &lt;dbl&gt;, V38 &lt;dbl&gt;, V39 &lt;dbl&gt;, V40 &lt;dbl&gt;,
+#   V41 &lt;dbl&gt;, V42 &lt;dbl&gt;, V43 &lt;dbl&gt;, V44 &lt;dbl&gt;, V45 &lt;dbl&gt;, V46 &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>There are two different ways we can take advantage of these samples:</p>
+<ol type="1">
+<li><strong>Compute RMSE for each posterior sample (i.e., for each row) and then observe posterior distribution for RMSE.</strong> We’ll refer to this as <span class="math inline">\(RMSE_{basic}\)</span>:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>rmse_basic_w_def <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">rowMeans</span>(test_error_w_def_samples<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(rmse_basic_w_def)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="17-bayes-model-comp_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ol start="2" type="1">
+<li><strong>Compute RMSE for each observation (i.e., for each column) and then observe distribution of RMSE values across observations.</strong> We’ll refer to this as <span class="math inline">\(RMSE_{alt}\)</span>:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>rmse_alt_w_def <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">colMeans</span>(test_error_w_def_samples<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(rmse_alt_w_def)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="17-bayes-model-comp_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This histogram is very different than the previous one, because we now observe an RMSE value <strong>for each observation</strong>, averaging over the posterior samples. One of the reasons we would want to do this, is that we can then take the difference in the <span class="math inline">\(RMSE_{alt, i}\)</span> values for each observation <span class="math inline">\(i\)</span> between two models. In other words, for each observation we can compute <span class="math inline">\(RMSE_{alt, i}^{Model1} - RMSE_{alt, i}^{Model2}\)</span>. The following code first computes the <span class="math inline">\(RMSE_{alt}\)</span> values for each observation with <code>model_wo_def</code> and then computes the difference between the <code>model_w_def</code> and <code>model_wo_def</code> values across the observations:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>test_error_wo_def_samples <span class="ot">&lt;-</span> <span class="fu">predictive_error</span>(model_wo_def, <span class="at">newdata =</span> test_data,</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">method =</span> <span class="st">"posterior_epred"</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>rmse_alt_wo_def <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">colMeans</span>(test_error_wo_def_samples<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the histogram of the differences</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(rmse_alt_w_def <span class="sc">-</span> rmse_alt_wo_def)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="17-bayes-model-comp_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Using this distribution of differences, we can also compute mean difference with standard errors to provide us with some notion of uncertainty about the difference between the performance of the two models:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>mean_rmse_alt_diff <span class="ot">&lt;-</span> <span class="fu">mean</span>(rmse_alt_w_def <span class="sc">-</span> rmse_alt_wo_def)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>se_rmse_alt_diff <span class="ot">&lt;-</span> <span class="fu">sd</span>(rmse_alt_w_def <span class="sc">-</span> rmse_alt_wo_def) <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="fu">nrow</span>(test_data))</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Display interval:</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>(<span class="fu">c</span>(<span class="fu">sum</span>(mean_rmse_alt_diff) <span class="sc">-</span> <span class="dv">2</span> <span class="sc">*</span> se_rmse_alt_diff, <span class="co"># mean - 2 * SE</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>   mean_rmse_alt_diff, <span class="co"># mean</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">sum</span>(mean_rmse_alt_diff) <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> se_rmse_alt_diff)) <span class="co"># mean + 2 * SE</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -0.0522383287 -0.0004198031  0.0513987225</code></pre>
+</div>
+</div>
+<p>From this, we can see that the model with defense is on average slightly better than the model without defense (since lower RMSE is better). However, this difference is within two standard errors so we don’t have enough evidence to claim the model with defense is better than the one without.</p>
+<p>Of course, in the steps above we generated the predictions using the posterior distributions of the models’ conditional expectations (via <code>posterior_epred</code>). We could instead repeat the above steps using the posterior predictive distributions (via <code>posterior_predict</code>) to generate the RMSE values. I’ll leave that for you as an exercise to see how accounting for outcome-level uncertainty affects the results.</p>
+</section>
+<section id="elpd-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="elpd-comparison">ELPD Comparison</h3>
+<p>As an alternative to RMSE, we can also consider <strong>likelihood-based</strong> measures of performance. Simply put, the higher the likelihood of the test data given the model’s parameter estimate then the better the fit of the model to the data. This leads us to computing the <strong>expected log pointwise predictive density (ELPD)</strong> of a model which is the sum of the posterior mean log-likelihood values across observations. For instance, the following computes the posterior mean of the log-likelihood values for each test data observation using <code>model_w_def</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>llt_w_defense <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(<span class="fu">log_lik</span>(model_w_def, <span class="at">newdata =</span> test_data,</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                                  <span class="co"># In case there are new level in the test data</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">allow_new_levels =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(llt_w_defense)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="17-bayes-model-comp_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The <code>log_lik</code> function conveniently computes the log-likelihood for us and returns a matrix in a similar way to the <code>brms</code> predict functions, with one row per posterior sample and one column per observation. The above histogram displays the distribution of posterior mean log-likelihood values for each observation. The ELPD for this model is simply the sum of these values:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(llt_w_defense)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -242.3975</code></pre>
+</div>
+</div>
+<p>We can repeat for the model without defense and take the difference in their ELPD values:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>llt_wo_defense <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(<span class="fu">log_lik</span>(model_wo_def, <span class="at">newdata =</span> test_data,</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">allow_new_levels =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(llt_w_defense) <span class="sc">-</span> <span class="fu">sum</span>(llt_wo_defense)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4.246794</code></pre>
+</div>
+</div>
+<p>We observe that the ELPD for the model with defense is better (because it’s higher), but is this noticeably higher? In order to make such claim, we can compute the standard error of this ELPD difference since it is the sum of log-likelihood differences between the two models. The standard error for a sum is different than the standard error for a mean, it is computed as standard deviation of the quantity multiplied by the square root of the length. The following code chunk computes the standard error for this particular ELPD difference:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sd</span>(llt_w_defense <span class="sc">-</span> llt_wo_defense) <span class="sc">*</span> <span class="fu">sqrt</span>(<span class="fu">nrow</span>(test_data))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2.916453</code></pre>
+</div>
+</div>
+<p>This standard error tells us that the ELPD difference is about 1.5 standard errors away from zero (<span class="math inline">\(\approx\)</span> 4.246794 / 2.916453). While we have some evidence that the model with defense is better than the model without defense, it is not overwhelming evidence.</p>
+<p>One of the benefits of using the log-likelihood based criterion like ELPD is that it is based on the evaluating the posterior predictive distributions at the observed test data response values. The <code>posterior_epred</code> version of predictions that we used in the RMSE demonstration above completely ignores the outcome-level distribution that is accounted for with the posterior predictive distribution via <code>posterior_predict</code>. However, <code>posterior_predict</code> relies on sampling values from the posterior predictive distribution. This means that the likelihood-based measure can provide us with a stable way of measuring performance for more extreme response values in the tails, without depending on sampling unstable values from the posterior predictive distribution. This leads to the ELPD being a very common approach for comparing two different models. While it is ideal to compute the ELPD differences with cross-validation rather than a single train/test split, you can <a href="https://mc-stan.org/loo/index.html">read here for information about a leave-one-out shortcut approach</a> for ELPD differences that is commonly used in Bayesian model selection problems.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/ryurko\.github\.io\/cmu-sportsanalytics-spring25\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
