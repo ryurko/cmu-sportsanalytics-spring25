@@ -23,4 +23,5 @@ title: "Demos"
 | 15      | Mar 20  | Bayesian RAPM in Stan | [HTML](demos/15-bayes-rapm-stan.qmd)  |
 | 16      | Mar 27  | Modeling team ratings and posterior predictions | [HTML](demos/16-team-ratings.qmd)  |
 | 17      | Apr 1  | Bayesian model comparison | [HTML](demos/17-bayes-model-comp.qmd)  |
-| 18      | Apr 1  | Introduction to Elo ratings | [HTML](demos/18-elo-ratings.qmd)  |
+| 18      | Apr 8  | Introduction to Elo ratings | [HTML](demos/18-elo-ratings.qmd)  |
+| 19      | Apr 10  | Bayesian state-space model for NFL team ratings | [HTML](demos/19-bayes-state-space.qmd)  |
