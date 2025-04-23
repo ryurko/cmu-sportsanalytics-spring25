@@ -25,3 +25,4 @@ title: "Demos"
 | 17      | Apr 1  | Bayesian model comparison | [HTML](demos/17-bayes-model-comp.qmd)  |
 | 18      | Apr 8  | Introduction to Elo ratings | [HTML](demos/18-elo-ratings.qmd)  |
 | 19      | Apr 10  | Bayesian state-space model for NFL team ratings | [HTML](demos/19-bayes-state-space.qmd)  |
+| 20      | Apr 22 & 24 | Quang Nguyen's Big Data Bowl workshop | [HTML](https://getstrained.github.io/talks/csas)

@@ -25,4 +25,5 @@ title: "Lectures"
 | 19        | Apr 1  | Bayesian model comparison and Elo ratings | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1AyGBAYmQCJzgRzQ8oqh_4VjSPYjtLlnIfH7rSB3QKfs/edit?usp=sharing)        |
 | 20        | Apr 8  | Elo ratings | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1yM-ACr0l2oBGKGrLN3GHUYZYLHO2u8oyvM3eQpMuTJ8/edit?usp=sharing)        |
 | 21        | Apr 10  | Bayesian state-space models | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1AKxAxNcnicogqKaadM9Dedsi7ZHOYFt0AjfHuMflQzk/edit?usp=sharing)        |
-
+| 22        | Apr 15  | Introduction to player-tracking data | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1iKtlEfPl3pBqF8ZvTLnlTk0O1fb_NJKKJ4Aqse-cvE4/edit?usp=sharing)        |
+| 23 & 24   | Apr 22 & 24 | Tracking data (cont.) | [Google slides (requires CMU email)](https://docs.google.com/presentation/d/1qB1xbkz8aFBRgVJown3ebGiaoGLpKoc-5h-n3faQjfo/edit?usp=sharing)
